@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "fcbce9b8-6daf-4a75-8a44-15b6ab959943",
+  "latestPlannerResponse": {
+    "schemaVersion": "1.1",
+    "message": "Here is the plan for Scaffold routes and independent placeholder pages for PoC screens.",
+    "featureUnderstanding": "Scaffold seven public routes in the Rivvy Portal UI (React/TS with React Router) that each render a distinct, minimal placeholder page. Routes: /login, /profile, /dashboard, /new-brief, /vault, /screening, /admin. Each page shows a visible title matching its screen name and includes a unique data-testid for automated verification. A shared minimal layout may be used. No authentication, role-aware routing, global navigation, or business logic is included.",
+    "scope": {
+      "in": [
+        "Add React Router routes in Rivvy Portal UI for /login, /profile, /dashboard, /new-brief, /vault, /screening, /admin",
+        "Create distinct placeholder pages for each route rendered within a shared minimal layout",
+        "Display a visible title on each page matching: Login, Profile, Dashboard, New Brief, Brand Vault, Screening Room, Admin",
+        "Include a unique data-testid on each placeholder page",
+        "Ensure direct navigation to each path loads the corresponding page without redirects or errors"
+      ],
+      "out": [
+        "Global navigation or menus",
+        "Authentication, role-aware routing, or guards",
+        "API calls, state management, or integration with Rivvy Portal Services",
+        "Styling beyond minimal readability",
+        "Redirect logic, 404/500 handling changes, or error boundary work",
+        "Automated test code",
+        "Conventions or placement rules for data-testid attributes",
+        "Updates to architecture model entities or UI workflow diagrams"
+      ]
+    },
+    "assumptions": [
+      "The development server/build setup supports client-side routing for deep links to all listed paths.",
+      "The implementer will choose the element and naming for each data-testid while ensuring uniqueness.",
+      "Titles should match exactly: Login, Profile, Dashboard, New Brief, Brand Vault, Screening Room, Admin."
+    ],
+    "acceptanceCriteria": [
+      "Navigating to /login renders a placeholder with visible title 'Login' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /profile renders a placeholder with visible title 'Profile' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /dashboard renders a placeholder with visible title 'Dashboard' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /new-brief renders a placeholder with visible title 'New Brief' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /vault renders a placeholder with visible title 'Brand Vault' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /screening renders a placeholder with visible title 'Screening Room' and a unique data-testid; no redirects or guards occur.",
+      "Navigating to /admin renders a placeholder with visible title 'Admin' and a unique data-testid; no redirects or guards occur.",
+      "Each placeholder page uses a distinct data-testid value not reused by other pages.",
+      "No global navigation, role-aware routing, or business logic is introduced by this work.",
+      "Placeholders may render within a shared layout but must remain visually distinguishable by their titles."
+    ],
+    "openQuestions": [],
+    "plannerReadyForSpec": true,
+    "implementationPlan": {
+      "planTitle": "Implementation Plan for Scaffold routes and independent placeholder pages for PoC screens",
+      "increments": [
+        {
+          "id": "INC-1",
+          "partIndex": 1,
+          "title": "Add React Router routes and placeholder pages with shared minimal layout",
+          "intent": "- Tech stack: React (TypeScript) with React Router v6+.\n- Goal: Define seven public routes and minimal placeholder pages with exact titles and unique data-testids; no guards, no navigation, no business logic.\n\nImplementation steps:\n1) Dependencies and setup\n  - Ensure react-router-dom is installed (v6+). If missing: npm i react-router-dom or yarn add react-router-dom.\n  - Confirm the app root (e.g., src/main.tsx or src/index.tsx) renders <App /> inside React.StrictMode and supports client-side routing.\n\n2) Shared minimal layout\n  - Create a minimal shared layout component (e.g., src/layouts/MinimalLayout.tsx) with:\n    - A simple container element (e.g., <div> or <main>) and React Router <Outlet /> to render child routes.\n    - No global nav, header, or footer beyond what’s necessary to display page content.\n\n3) Placeholder pages (distinct components)\n  - Create one component per route (location flexible, e.g., src/pages or src/screens). Each component should:\n    - Render a visible title matching exactly the screen name.\n    - Include a unique data-testid on a deterministic parent or title element (implementer’s choice) and ensure uniqueness across pages.\n  - Pages and their titles (examples in parentheses for suggested data-testid values; implementer may choose different names):\n    - Login — title: \"Login\" (e.g., data-testid: page-login)\n    - Profile — title: \"Profile\" (e.g., data-testid: page-profile)\n    - Dashboard — title: \"Dashboard\" (e.g., data-testid: page-dashboard)\n    - New Brief — title: \"New Brief\" (e.g., data-testid: page-new-brief)\n    - Brand Vault — title: \"Brand Vault\" (e.g., data-testid: page-vault)\n    - Screening Room — title: \"Screening Room\" (e.g., data-testid: page-screening)\n    - Admin — title: \"Admin\" (e.g., data-testid: page-admin)\n\n4) Route definitions\n  - In src/App.tsx (or a dedicated src/routes/AppRoutes.tsx), wrap the application with <BrowserRouter> and define <Routes> as follows:\n    - Parent route element={<MinimalLayout />}\n      - <Route path=\"/login\" element={<LoginPage />} />\n      - <Route path=\"/profile\" element={<ProfilePage />} />\n      - <Route path=\"/dashboard\" element={<DashboardPage />} />\n      - <Route path=\"/new-brief\" element={<NewBriefPage />} />\n      - <Route path=\"/vault\" element={<BrandVaultPage />} />\n      - <Route path=\"/screening\" element={<ScreeningRoomPage />} />\n      - <Route path=\"/admin\" element={<AdminPage />} />\n  - Do not add redirect or guard logic. Do not modify 404 handling beyond existing behavior.\n\n5) Type-safety and linting\n  - Ensure all components are in TypeScript with FC typings or inferred JSX.Element return types.\n  - Run lint and typecheck fixes as needed (npm run lint, npm run typecheck).\n\n6) Manual verification (covers acceptance criteria)\n  - Start the app and directly navigate to each route in the browser:\n    - /login → title 'Login' is visible; a unique data-testid is present.\n    - /profile → title 'Profile' is visible; a unique data-testid is present.\n    - /dashboard → title 'Dashboard' is visible; a unique data-testid is present.\n    - /new-brief → title 'New Brief' is visible; a unique data-testid is present.\n    - /vault → title 'Brand Vault' is visible; a unique data-testid is present.\n    - /screening → title 'Screening Room' is visible; a unique data-testid is present.\n    - /admin → title 'Admin' is visible; a unique data-testid is present.\n  - Confirm there are no redirects, no auth prompts, and each page renders within the shared minimal layout.\n\n7) Delivery checklist\n  - Commit new/updated files (e.g., MinimalLayout, 7 page components, App routes file) with concise messages.\n  - Provide a short README snippet or PR description outlining:\n    - The seven routes and page titles\n    - Confirmation of unique data-testids per page\n    - Explicit note that no global nav, guards, or business logic were added",
+          "dependencies": []
+        }
+      ]
+    }
+  },
+  "answers": {
+    "5e0c57a9-10df-4abd-9191-b0cb87a4677c": "React Router, by the way, this is a React/TS app",
+    "3877b7a5-8e2c-4570-b11d-ca5ba429ed56": "Sure but too detailed a question about html tags",
+    "66dfaba0-d7d3-4d04-bffb-4c1f12cbc7c2": "No convention, don't add this to spec, the implementer will decide",
+    "b4abf1e7-2320-405f-b615-071bcf059e92": "shared",
+    "3b1b6c32-1cc6-443b-8c1c-c55ec4bf1f51": "confirmed",
+    "04d7f2a8-2630-4561-ba00-db798234c722": "No, they are they, don't worry about this",
+    "ebac0d2e-e1aa-4ab9-9406-a08fa2f6306c": "No"
+  },
+  "questionStatuses": {
+    "5e0c57a9-10df-4abd-9191-b0cb87a4677c": "Answered",
+    "3877b7a5-8e2c-4570-b11d-ca5ba429ed56": "Answered",
+    "66dfaba0-d7d3-4d04-bffb-4c1f12cbc7c2": "Answered",
+    "b4abf1e7-2320-405f-b615-071bcf059e92": "Answered",
+    "3b1b6c32-1cc6-443b-8c1c-c55ec4bf1f51": "Answered",
+    "04d7f2a8-2630-4561-ba00-db798234c722": "Answered",
+    "ebac0d2e-e1aa-4ab9-9406-a08fa2f6306c": "Answered"
+  },
+  "streamedQuestions": [],
+  "streamedAnswers": {},
+  "latestFolder": null,
+  "incrementStatuses": {
+    "INC-1": "SPEC_READY"
+  },
+  "activeIncrementId": "INC-1",
+  "prefetchedSpecs": {},
+  "partStatuses": {},
+  "activePartIndex": null,
+  "currentJobId": null,
+  "partTranscripts": {},
+  "hasBootstrapped": true,
+  "hasPlan": true,
+  "hasTriggeredOrchestration": false,
+  "inputDraft": "",
+  "messages": [
+    {
+      "id": "msg-1773588319406-xsrdaugvx",
+      "role": "assistant",
+      "content": "Hi! I’m ready to support the “Scaffold routes and independent placeholder pages for PoC screens” story. I have the product backlog and architecture context on hand. Are there any specific architecture entities or diagrams you’d like to highlight as most relevant to this work item?",
+      "timestamp": "2026-03-15T15:25:19.406Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773588329786-u5ozo09fz",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-15T15:25:29.786Z"
+    },
+    {
+      "id": "msg-1773588399872-fdp2uzsuc",
+      "role": "assistant",
+      "content": "Here’s my understanding of the Rivvy Portal UI scaffolding; I have 7 questions to finalize scope before spec.",
+      "timestamp": "2026-03-15T15:26:39.872Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773588619116-8qri60s1w",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: What frontend stack and router are we targeting (e.g., React Router, Next.js App/Pages Router, Vue Router)?\nA: React Router, by the way, this is a React/TS app\n\nQ: Should titles be rendered as an H1 element and match the exact strings provided?\nA: Sure but too detailed a question about html tags\n\nQ: Where should the data-testid live (root page container vs. title), and is there a required naming convention?\nA: No convention, don't add this to spec, the implementer will decide\n\nQ: Is a shared minimal layout acceptable, or must each page render without any shared layout shell?\nA: shared\n\nQ: Confirm that all routes should be publicly accessible with no guards or redirects for the PoC.\nA: confirmed\n\nQ: Should we add missing UI screens (Profile, Dashboard, Screening Room, Admin) to the architecture model for parity?\nA: No, they are they, don't worry about this\n\nQ: Are there repository path or naming conventions we must follow for route and component files?\nA: No",
+      "timestamp": "2026-03-15T15:30:19.116Z"
+    },
+    {
+      "id": "msg-1773588668892-dzz2npdiv",
+      "role": "assistant",
+      "content": "Thanks—your answers resolve my questions. I’m ready to proceed to spec with the scope and criteria below.",
+      "timestamp": "2026-03-15T15:31:08.892Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773588668899-3sv19i843",
+      "role": "assistant",
+      "content": "Okay, let's see if we need to break this work item into parts...",
+      "timestamp": "2026-03-15T15:31:08.899Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773588723477-zfohjvr96",
+      "role": "assistant",
+      "content": "This item is small enough, so let's get the software architect to review this.",
+      "timestamp": "2026-03-15T15:32:03.477Z",
+      "persona": "Product Manager"
+    }
+  ]
+}

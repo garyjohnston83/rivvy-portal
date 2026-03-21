@@ -1,0 +1,55 @@
+=== DISPLAYED CONVERSATION ===
+Generated: 2026-03-19T21:17:07.739Z
+
+--- Test Engineer ---
+Now reviewing all stories together for integration and end-to-end test coverage...
+
+--- Test Engineer ---
+Cross-story integration and E2E tests are needed to validate unified generic failures, lockout + disabled interactions, remember-me TTL behaviors, and session invalidation across both stories. Notable inconsistencies (generic error text and remember-me TTL) must be resolved or made config-driven.
+
+--- Test Engineer ---
+Defined cross-story integration and E2E tests focusing on unified error semantics, lockout + disabled/invited interactions, Remember me TTL behavior (conflicting 30 vs 180 days), session revocation on disablement, cookie security flags, and race-safety. Several spec conflicts surfaced and are listed as open questions.
+
+--- Test Engineer ---
+Cross-story integration and E2E tests are needed to validate unified 401 behavior, lockout + disabled/invited interactions, Remember me TTL and sliding refresh, and immediate session invalidation on disablement across both stories. There are copy/TTL configuration conflicts to resolve.
+
+--- You ---
+Q: Generic error message string differs between stories ('We couldn’t sign you in. Check your email and password.' vs 'Invalid email or password.'). Which exact copy is canonical for all 401s?
+A: We couldn’t sign you in. Check your email and password
+
+Q: Remember me inactivity TTL conflict: Story 1 uses 30 days; Story 2 uses 180 days (rolling). What is the final TTL value and sliding policy? Should standard 8h sessions also be sliding?
+A: 180 days (rolling)
+
+Q: Configuration source of truth: Should there be a single env var for Remember me TTL (e.g., AUTH_REMEMBER_TTL_DAYS) used across both stories? If both AUTH_REMEMBER_TTL_DAYS and REMEMBER_ME_IDLE_TTL_DAYS exist, which wins?
+A: Use AUTH_REMEMBER_TTL_DAYS
+
+Q: Do failed attempts for disabled or invited users count toward the per-account lockout threshold (Story 1 says yes; Story 2 is silent)?
+A: Yes
+
+Q: While an account is locked, should subsequent attempts increment failed_signin_count or only log LOCKED_OUT without changing counters?
+A: only log LOCKED_OUT without changing counters
+
+Q: Upon disabling a user, should we proactively invalidate all sessions immediately (push) or only 'on next request' as Story 2 states? If proactive invalidation exists, how is it triggered?
+A:  'on next request'
+
+Q: After an account transitions from locked to disabled and later back to active, should prior lockout_until remain in effect or be cleared on status change to active?
+A: be cleared on status change to active
+
+Q: Should UI display any specific messaging when a session is invalidated due to disablement (e.g., a banner) or always fall back to the same generic error upon next login attempt?
+A: always fall back to the same generic error upon next login attempt
+
+Q: SameSite policy value: Lax or Strict? Should this be consistent across both session modes and documented for cross-site SSO considerations (even if SSO is out of scope)?
+A: Lax, be consistent
+
+Q: Required logging/metrics schema: finalize reason enums, levels (INFO/WARN), and PII policy (log normalized email vs userId) so tests assert the correct shape without leaking sensitive data.
+A: Sounds good
+
+--- Test Engineer ---
+Integration and E2E tests updated per clarified decisions: canonical generic copy, 180-day rolling Remember me via AUTH_REMEMBER_TTL_DAYS, SameSite=Lax, lockout rules, and on-next-request disablement invalidation.
+
+--- You ---
+Q: Should the standard 8-hour session be sliding as well, or remain non-sliding (only Remember me is rolling)? The answer specified 180-day rolling for Remember me but did not explicitly confirm standard session behavior.
+A: Sliding
+
+Q: For logging/metrics, finalize exact fields, enum values, and levels (e.g., INFO for SUCCESS, WARN for failures) and whether to log normalized email, userId, or both under the PII policy so assertions can target precise shapes.
+A: You decide a minimum set of logging/metrics - keep it light for now

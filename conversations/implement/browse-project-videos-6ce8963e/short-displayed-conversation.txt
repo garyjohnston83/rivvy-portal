@@ -1,0 +1,41 @@
+=== DISPLAYED CONVERSATION ===
+Generated: 2026-03-17T16:32:08.509Z
+
+--- Product Manager ---
+Great—let’s get started on “Browse project videos.” I have the product backlog and full architecture context (services, data entities, UI screens) available. Would you like to highlight any specific entities or diagrams (e.g., Screening Room, Video/VideoVersion, Portal API) as most relevant for this story?
+
+--- You ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- Product Manager ---
+Here is my understanding of Browse project videos; I have 7 questions to finalize scope.
+
+--- You ---
+Answers to your questions:
+
+Q: What is the precise rule for the completion badge: latestApprovedVersionId present, any VideoVersion.isApproved, or ApprovalRequest status approved?
+A: any VideoVersion.isApproved
+
+Q: Should the Video detail include a playable player of the latest version now, or only metadata until the version switching story?
+A: latest version now
+
+Q: What is the desired default sort order for the list: orderIndex, createdAt, or title, and is grouping required?
+A: createdAt
+
+Q: Do we need pagination or infinite scroll for large Projects, and what page size or load strategy should we use?
+A: infinite scroll for now
+
+Q: How should a Video with no versions yet display its current version number and detail state?
+A: sensible defaults
+
+Q: Please confirm access rules for Clients versus Rivvy Producers: org or project membership versus producer to org assignment
+A: yes, client based on their org and producers based on org assignment
+
+Q: What is the URL or route behavior for opening Video detail: in place panel vs deep link like /screening/:videoId, and should deep linking be supported?
+A: deep link like /screening/:videoId
+
+--- Product Manager ---
+Thanks—updated with your answers and ready for spec.
+
+--- Product Manager ---
+Okay, let's see if we need to break this work item into parts...

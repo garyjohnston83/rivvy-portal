@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "db80b745-6d30-439e-83ee-6f73ab98ac0e",
+  "latestPlannerResponse": {
+    "schemaVersion": "1.1",
+    "message": "Here is the plan for Render client dashboard tiles.",
+    "featureUnderstanding": "Add a new Dashboard screen at /dashboard for authenticated Client users. It renders exactly three tiles—New Brief, Screening Room, Brand Vault—in that order within a 4-up grid. Each tile includes a label and short descriptive subtext and navigates to: New Brief -> /new-brief, Screening Room -> /screening, Brand Vault -> /vault. No tiles are hidden or disabled for Client users in the PoC. No summary widgets appear. Standard header/nav and footer remain. Users belong to a single org; no org selector.",
+    "scope": {
+      "in": [
+        "Create Dashboard UI screen at /dashboard for Client users",
+        "Render exactly three tiles labeled New Brief, Screening Room, Brand Vault",
+        "Maintain tile order: New Brief (1st), Screening Room (2nd), Brand Vault (3rd)",
+        "Include short descriptive subtext under each tile label (initial copy provided)",
+        "Tile navigation targets: /new-brief, /screening, /vault",
+        "Use a 4-up grid layout (three tiles occupying available columns)",
+        "Include standard header/nav and footer",
+        "Exclude summary widgets from the Dashboard",
+        "Ensure keyboard accessibility and logical tab order"
+      ],
+      "out": [
+        "Producer-specific or Admin dashboard experiences",
+        "Feature work on destination pages beyond navigation",
+        "Role-based gating/feature flags beyond stated Client behavior",
+        "Analytics/telemetry",
+        "Localization or theming changes",
+        "Dynamic badges/counters or backend integrations",
+        "Multi-organization context switching"
+      ]
+    },
+    "assumptions": [
+      "Initial descriptive subtext will be refined later without layout changes.",
+      "4-up grid is four columns on desktop; responsive behavior follows existing design system.",
+      "Existing Rivvy Portal UI components/styles are reused; no new design tokens or icons needed.",
+      "Accessibility follows portal standards (focusable tiles, Enter/Space activation)."
+    ],
+    "acceptanceCriteria": [
+      "Given an authenticated Client user visits /dashboard, exactly three tiles are visible with labels: New Brief, Screening Room, Brand Vault.",
+      "Tiles render in the order: New Brief (first), Screening Room (second), Brand Vault (third) across supported viewports.",
+      "Each tile includes a visible descriptive subtext beneath its label.",
+      "Clicking New Brief navigates to /new-brief in the same tab.",
+      "Clicking Screening Room navigates to /screening in the same tab.",
+      "Clicking Brand Vault navigates to /vault in the same tab.",
+      "No tiles are hidden or disabled for Client users in the PoC.",
+      "No summary widgets (e.g., Recent Videos, Draft Briefs) appear on the Dashboard.",
+      "Tiles are keyboard-focusable and activate via Enter/Space; tab order matches visual order.",
+      "Standard header/nav and footer are present on the Dashboard."
+    ],
+    "openQuestions": [],
+    "plannerReadyForSpec": true,
+    "implementationPlan": {
+      "planTitle": "Implementation Plan for Render client dashboard tiles",
+      "increments": [
+        {
+          "id": "INC-1",
+          "partIndex": 1,
+          "title": "Add Client Dashboard at /dashboard with three ordered tiles and subtext",
+          "intent": "- UI architecture/model updates:\n  - Add ui_screens entries:\n    - Dashboard (/dashboard)\n    - Screening Room (/screening)\n  - Confirm existing ui_screens for New Brief (/new-brief) and Brand Vault (/vault) are unchanged.\n\n- Frontend implementation (Rivvy Portal UI):\n  - Routing:\n    - Register a new route /dashboard rendering a DashboardPage component.\n    - Ensure route is accessible to authenticated users; no special feature flags or conditional gating for Client users in PoC.\n  - Screen component:\n    - Create DashboardPage (e.g., src/screens/DashboardPage.tsx) that uses standard site layout (header/nav, footer) and excludes any summary widgets.\n    - Layout: implement a 4-up grid using existing design system primitives (e.g., CSS grid: grid-template-columns: repeat(4, 1fr); gap per design tokens). On smaller viewports, follow responsive defaults (e.g., 1–2 columns as defined by the system).\n  - Tile component(s):\n    - Reuse an existing Card/Tile component, or create a lightweight TileCard (src/components/TileCard.tsx) that accepts props: title, subtext, to (href), data-testid.\n    - Render exactly three TileCard instances, in DOM order:\n      1) New Brief -> title: \"New Brief\"; subtext: \"Kick off a new project by submitting your brief.\"; to: \"/new-brief\"\n      2) Screening Room -> title: \"Screening Room\"; subtext: \"Watch and review your project videos with timecoded comments.\"; to: \"/screening\"\n      3) Brand Vault -> title: \"Brand Vault\"; subtext: \"Manage approved brand assets and versions.\"; to: \"/vault\"\n    - Ensure each tile is a semantic link (<a> or Link) with proper accessible name (the title), includes subtext as descriptive text, and is keyboard-focusable. Activate on Enter/Space per standard Link/Button semantics (prefer Link).\n  - Accessibility and order:\n    - Visual order equals DOM order to ensure correct tab sequence: New Brief, Screening Room, Brand Vault.\n    - Provide focus states consistent with the design system; ensure color contrast of text within tiles meets WCAG AA.\n  - Navigation/visibility:\n    - Do not implement any conditional visibility/disabled states for Client users in PoC.\n    - Do not include any summary widgets (Recent Videos, Draft Briefs) on this page.\n\n- Optional navigation integration:\n  - If the global nav includes a Dashboard entry, point it to /dashboard; otherwise, this can be accessed via direct navigation without nav changes for PoC.\n\n- Testing:\n  - Unit/Component tests (React Testing Library):\n    - Renders exactly three tiles and no more.\n    - Verifies text content for labels and subtext of all three tiles.\n    - Asserts tiles appear in correct DOM order.\n    - Asserts hrefs: /new-brief, /screening, /vault.\n    - Asserts absence of summary widgets container/components on DashboardPage.\n  - Accessibility tests:\n    - Run axe checks on DashboardPage; ensure no critical violations.\n    - Verify tiles are focusable in order and activate via keyboard.\n  - E2E (Cypress or equivalent):\n    - Given an authenticated Client user, visit /dashboard; verify three tiles, click each tile and confirm navigation routes.\n\n- Documentation:\n  - Update UI route map to include /dashboard and /screening destinations.\n  - Note PoC constraints: no conditional visibility, no widgets, single-org assumption.\n\n- Release/rollout:\n  - No feature flag; ship as default for Client users.\n  - Monitor basic error logs; analytics out of scope.",
+          "dependencies": []
+        }
+      ]
+    }
+  },
+  "answers": {
+    "b537f317-5bf7-4846-8ff2-b110513a8186": "yes",
+    "b1c20881-9d62-49dc-bbaa-fd2f14867109": "These paths were provided in the architecture meta-model",
+    "37034562-44cb-44db-b58d-4f7e1d8e68b7": "the dashboard is different for a Producer.  Admin doesn't use dashboard",
+    "3f62fd70-453f-4656-960c-0d588d24ded6": "Ye",
+    "3cb42a45-59fa-4812-9b6d-834ab2566248": "4-up grid",
+    "d2428c5d-7af6-4a0b-98cc-14c01ae6e70d": "descriptive subtext",
+    "42801fa0-3f09-4948-820f-3f72a43e15d2": "User is only single org",
+    "c0062614-c7c5-494c-b055-555c87fbef12": "/screening",
+    "ff31eb7a-c00f-4b2c-bacf-820f6aa419b2": "You decide, I can refine wording after"
+  },
+  "questionStatuses": {
+    "b537f317-5bf7-4846-8ff2-b110513a8186": "Answered",
+    "b1c20881-9d62-49dc-bbaa-fd2f14867109": "Answered",
+    "37034562-44cb-44db-b58d-4f7e1d8e68b7": "Answered",
+    "3f62fd70-453f-4656-960c-0d588d24ded6": "Answered",
+    "3cb42a45-59fa-4812-9b6d-834ab2566248": "Answered",
+    "d2428c5d-7af6-4a0b-98cc-14c01ae6e70d": "Answered",
+    "42801fa0-3f09-4948-820f-3f72a43e15d2": "Answered",
+    "c0062614-c7c5-494c-b055-555c87fbef12": "Answered",
+    "ff31eb7a-c00f-4b2c-bacf-820f6aa419b2": "Answered"
+  },
+  "streamedQuestions": [],
+  "streamedAnswers": {},
+  "latestFolder": null,
+  "incrementStatuses": {
+    "INC-1": "SPEC_READY"
+  },
+  "activeIncrementId": null,
+  "prefetchedSpecs": {},
+  "partStatuses": {},
+  "activePartIndex": null,
+  "currentJobId": null,
+  "partTranscripts": {},
+  "hasBootstrapped": true,
+  "hasPlan": true,
+  "hasTriggeredOrchestration": false,
+  "inputDraft": "",
+  "messages": [
+    {
+      "id": "msg-1773509495381-v2snku7lq",
+      "role": "assistant",
+      "content": "Welcome—let’s get started on “Render client dashboard tiles.” I have the product backlog and architecture context available to support this story. Are there any specific architecture entities or diagrams you’d like me to highlight as most relevant here?",
+      "timestamp": "2026-03-14T17:31:35.381Z",
+      "persona": "Product Owner"
+    },
+    {
+      "id": "msg-1773676340264-ts8r4yc49",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-16T15:52:20.264Z"
+    },
+    {
+      "id": "msg-1773676399716-p3076vpd4",
+      "role": "assistant",
+      "content": "Here’s my understanding; I have 7 questions to confirm details before we lock scope.",
+      "timestamp": "2026-03-16T15:53:19.716Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773676538932-ovx0nlfaq",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: Should we create a new Dashboard UI screen at route /dashboard, and is that the exact path?\nA: yes\n\nQ: What is the exact route for the Screening Room tile (e.g., /screening-room or another path)?\nA: These paths were provided in the architecture meta-model\n\nQ: Should non-Client authenticated users (e.g., Producers/Admins) also see the same three tiles in the PoC, or is the Dashboard limited to Client users only?\nA: the dashboard is different for a Producer.  Admin doesn't use dashboard\n\nQ: Are standard header/nav and footer permitted on the Dashboard while still excluding summary widgets?\nA: Ye\n\nQ: Any specific layout requirements (e.g., 3-up grid on desktop, stacked on mobile) or tile dimensions/icons to follow?\nA: 4-up grid\n\nQ: Should tiles include any descriptive subtext, or label-only for the PoC?\nA: descriptive subtext\n\nQ: Do tiles require an organization context selector if a user belongs to multiple orgs, or is current default org context sufficient?\nA: User is only single org",
+      "timestamp": "2026-03-16T15:55:38.932Z"
+    },
+    {
+      "id": "msg-1773676621013-wudbz43sz",
+      "role": "assistant",
+      "content": "Thanks—updated with 4-up grid and subtext. I have 2 follow-ups before we lock scope.",
+      "timestamp": "2026-03-16T15:57:01.013Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773677270193-ckkhk44py",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: Please confirm the exact Screening Room route (path string) to link the tile.\nA: /screening\n\nQ: Please provide the exact descriptive subtext copy for each tile (New Brief, Screening Room, Brand Vault).\nA: You decide, I can refine wording after",
+      "timestamp": "2026-03-16T16:07:50.193Z"
+    },
+    {
+      "id": "msg-1773677314062-ginuu80sb",
+      "role": "assistant",
+      "content": "Great—Dashboard at /dashboard with three ordered tiles and subtext, linking Screening Room to /screening. I’ll propose initial copy; ready to move to spec.",
+      "timestamp": "2026-03-16T16:08:34.062Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773677314075-bcacxutpa",
+      "role": "assistant",
+      "content": "Okay, let's see if we need to break this work item into parts...",
+      "timestamp": "2026-03-16T16:08:34.075Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773677423488-xouf2597g",
+      "role": "assistant",
+      "content": "This item is small enough, so let's get the software architect to review this.",
+      "timestamp": "2026-03-16T16:10:23.488Z",
+      "persona": "Product Manager"
+    }
+  ]
+}

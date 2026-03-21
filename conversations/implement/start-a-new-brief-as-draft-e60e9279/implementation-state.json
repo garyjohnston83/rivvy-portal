@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "1cbbf507-fc79-402e-8938-35a9c619c371",
+  "latestPlannerResponse": {
+    "schemaVersion": "1.1",
+    "message": "Here is the plan for Start a new Brief as draft.",
+    "featureUnderstanding": "On New Brief (/new-brief), when a Client lands on the page a Brief is auto-created with status=draft, scoped to the Client’s single Organization. The draft supports editing project-level fields: title (optional until submission), description, priority (default=normal), desiredDueDate, budget, creativeDirection, metadata. submittedBy is set to the creator’s user ID at draft creation. Cancel always deletes the auto-created draft so no draft remains. Visibility: Clients in the org can see the draft; Producers assigned to that org (via ProducerAssignment) have view-only access.",
+    "scope": {
+      "in": [
+        "Autosave-on-entry creation of a draft Brief on /new-brief (status=draft, org-scoped, submittedBy=creator, priority=normal)",
+        "Editable project-level fields: title (optional in draft), description, priority, desiredDueDate, budget, creativeDirection, metadata",
+        "Continuous autosave of field edits after initial create",
+        "Visibility: Clients in the owning Organization can view the draft; assigned Producers have view-only access",
+        "Cancel action that deletes the auto-created draft"
+      ],
+      "out": [
+        "Submitting a Brief (status changes beyond draft)",
+        "BriefItems and Deliverables creation/editing",
+        "Notifications/emails",
+        "Admin visibility/controls",
+        "Producer editing of drafts",
+        "UI for managing references content (backend defaulting only)",
+        "Additional currency/validation rules for budget"
+      ]
+    },
+    "assumptions": [
+      "Each user belongs to exactly one Organization; no org selector is shown.",
+      "Title is optional in draft; backend stores a placeholder value at create time (e.g., \"Untitled Brief\") due to non-null title column.",
+      "Priority defaults to normal unless changed by the Client.",
+      "Autosave persists edits for all listed project-level fields.",
+      "Brief.metadata and Brief.references initialize to empty objects if not provided.",
+      "Budget accepts any numeric value without additional validation.",
+      "Producers have view-only access to drafts for their assigned client orgs in this story."
+    ],
+    "acceptanceCriteria": [
+      "When a Client navigates to /new-brief, a Brief is immediately persisted with status=draft, orgId set to the user’s Organization, submittedBy set to the current user, priority=normal, and non-null defaults for required fields (e.g., title placeholder, metadata={}, references={}).",
+      "The draft allows editing title, description, priority, desiredDueDate, budget, creativeDirection, and metadata; changes are autosaved.",
+      "Title may remain empty in the UI while the Brief is in draft; it is only required at submission (submission not in scope).",
+      "Cancel invoked from /new-brief deletes the auto-created draft so that no draft from that session exists afterward.",
+      "Only Clients who are members of the owning Organization can retrieve and view the draft.",
+      "Rivvy Producers assigned to the owning Organization via ProducerAssignment can view the draft but cannot edit it.",
+      "No BriefItems or Deliverables are created or modified as part of this story.",
+      "No emails or notifications are sent as part of this story."
+    ],
+    "openQuestions": [],
+    "plannerReadyForSpec": true,
+    "implementationPlan": {
+      "planTitle": "Implementation Plan for Start a new Brief as draft",
+      "increments": [
+        {
+          "id": "INC-1",
+          "partIndex": 1,
+          "title": "Autosave draft creation, edit, visibility, and cancel-delete for New Brief",
+          "intent": "- Backend (Portal API: ifc-mm2fbrdg-s9zlg)\n  - Data model usage:\n    - Use table rivvy_portal.brief (id, org_id, submitted_by, title, description, status, priority, desired_due_date, budget, creative_direction, references, metadata, created_at, updated_at).\n    - Apply server-side defaults at create: status='draft', priority='normal', title='Untitled Brief', references={}, metadata={}. submitted_by=current user, org_id=current user’s org.\n  - Authorization & visibility:\n    - Determine org via OrganizationMember. Enforce role-based access using OrgRoleAssignment and ProducerAssignment.\n    - CLIENTs in the brief’s org: can POST (create) and PATCH while status='draft', GET, and DELETE their own draft.\n    - PRODUCERs with ProducerAssignment(client_org_id == brief.org_id): can GET and list drafts (view-only); cannot PATCH/DELETE.\n    - Others: 403 or 404 as appropriate.\n  - Endpoints (new under Portal API):\n    - POST /api/briefs\n      - Create draft on page entry with defaults above. Returns 201 + Brief JSON.\n    - PATCH /api/briefs/{id}\n      - Autosave partial updates while status='draft'. Allowed: title (non-empty only), description, priority, desiredDueDate, budget, creativeDirection, metadata. Validate types; ignore empty/whitespace title to preserve placeholder.\n    - DELETE /api/briefs/{id}\n      - Cancel deletes the draft. Allowed only to creator while status='draft'. Return 204 on success; 409 if not draft.\n    - GET /api/briefs/{id}\n      - Fetch details. CLIENT in org or assigned PRODUCER allowed; PRODUCER is view-only.\n    - GET /api/briefs?status=draft (optional/recommended)\n      - List visible drafts for current user (CLIENT: own org; PRODUCER: assigned orgs).\n  - Error handling:\n    - 401 unauthenticated; 403 unauthorized; 404 not found/cross-org; 409 invalid state (edit/delete non-draft); 422 invalid payload.\n  - Serialization mapping:\n    - API ↔ DB: title, description, priority, desiredDueDate↔desired_due_date, budget, creativeDirection↔creative_direction, metadata, references, status, orgId↔org_id, submittedBy↔submitted_by, createdAt/updatedAt.\n\n- Frontend (UI screen: ui-mmkz7g4w-5k4mf /new-brief)\n  - On mount: POST /api/briefs; hold loading until ID returned; store briefId and initial values.\n  - Form fields: Title (optional in draft), Description, Priority (low|normal|high|urgent; default normal), Desired Due Date (date picker), Budget (numeric), Creative Direction, Metadata (lightweight JSON/key-value editor or textarea backing a JSON object).\n  - Title UX: If server returns placeholder, render input empty; do not send title in PATCH until user types non-empty value.\n  - Autosave: debounce ~500ms on change/blur; PATCH allowed fields; show subtle saved indicator; retry on transient failures.\n  - Cancel: confirm, then DELETE /api/briefs/{id}; on success navigate to /dashboard; if delete fails, show error and allow retry.\n  - Route guard: restrict /new-brief to CLIENT users; PRODUCERs won’t navigate here in normal flow.\n\n- Security enforcement\n  - Backend policies for role and org checks on all endpoints; PRODUCERs strictly read-only for drafts.\n\n- Data consistency & defaults\n  - Server enforces placeholder title, status/priority defaults, and non-null JSONB for references/metadata. Ignore empty title on PATCH.\n\n- Testing\n  - Backend tests: POST creates draft with correct org/submittedBy/defaults; PATCH enforces fields and ignores empty title; GET respects visibility; DELETE only by creator and only when draft; list filters by role/org.\n  - Frontend tests: initial POST on mount; autosave debounce behavior; title placeholder UX; cancel-delete flow redirects; access guard behavior.\n\n- Observability & rollout\n  - Structured logs on create/update/delete with brief_id, org_id, user_id, outcome. Optional feature flag to gate autosave create flow.",
+          "dependencies": []
+        }
+      ]
+    }
+  },
+  "answers": {
+    "3feb357d-2adb-4d39-9bdd-646090c591ee": "autosave",
+    "a0bb8696-340c-45fd-b6dd-16a43f82bb46": "Yes",
+    "b66db736-fc74-4830-ad6f-71039e636234": "There is only one org per user",
+    "8b5fa70c-c7da-49b2-8531-ee23ee1a1df4": "creator’s user ID ",
+    "9a0a6e44-cc18-472a-af12-62119926b6dc": "None",
+    "c352f930-f6b1-430f-8dfe-78571862ff6d": "access view-only",
+    "63c7d978-bfd0-4724-b5e3-1908ca9ab6a5": "always delete it"
+  },
+  "questionStatuses": {
+    "3feb357d-2adb-4d39-9bdd-646090c591ee": "Answered",
+    "a0bb8696-340c-45fd-b6dd-16a43f82bb46": "Answered",
+    "b66db736-fc74-4830-ad6f-71039e636234": "Answered",
+    "8b5fa70c-c7da-49b2-8531-ee23ee1a1df4": "Answered",
+    "9a0a6e44-cc18-472a-af12-62119926b6dc": "Answered",
+    "c352f930-f6b1-430f-8dfe-78571862ff6d": "Answered",
+    "63c7d978-bfd0-4724-b5e3-1908ca9ab6a5": "Answered"
+  },
+  "streamedQuestions": [],
+  "streamedAnswers": {},
+  "latestFolder": null,
+  "incrementStatuses": {
+    "INC-1": "SPEC_READY"
+  },
+  "activeIncrementId": null,
+  "prefetchedSpecs": {},
+  "partStatuses": {},
+  "activePartIndex": null,
+  "currentJobId": null,
+  "partTranscripts": {},
+  "hasBootstrapped": true,
+  "hasPlan": true,
+  "hasTriggeredOrchestration": false,
+  "inputDraft": "",
+  "messages": [
+    {
+      "id": "msg-1773683591832-l7bs8iqy8",
+      "role": "assistant",
+      "content": "Welcome—ready to support the “Start a new Brief as draft” story. I have the product backlog and full architecture model on hand; would you like to highlight any specific entities or diagrams (e.g., New Brief screen, Brief/Organization data, Portal API) as most relevant?",
+      "timestamp": "2026-03-16T17:53:11.832Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773742702289-xtfupvmzd",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-17T10:18:22.289Z"
+    },
+    {
+      "id": "msg-1773742705178-2my9rvkvw",
+      "role": "assistant",
+      "content": "Error: Chat request failed: 502",
+      "timestamp": "2026-03-17T10:18:25.178Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773742781342-vbjbszs3o",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-17T10:19:41.342Z"
+    },
+    {
+      "id": "msg-1773742783443-ldqhsi0w7",
+      "role": "assistant",
+      "content": "Error: Chat request failed: 502",
+      "timestamp": "2026-03-17T10:19:43.443Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743016206-d38c5ak28",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-17T10:23:36.206Z"
+    },
+    {
+      "id": "msg-1773743101601-71f8cof84",
+      "role": "assistant",
+      "content": "Here’s my understanding of “Start a new Brief as draft”; I have 6 questions to confirm details.",
+      "timestamp": "2026-03-17T10:25:01.601Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743220735-cz8c9tfeb",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: When is the draft created—only on explicit Save/Start, or immediately upon landing on /new-brief (autosave)?\nA: autosave\n\nQ: Should title be optional in draft (enforced only at submit), matching the story’s wording?\nA: Yes\n\nQ: For users in multiple orgs, do we always use the current org context, or allow explicit org selection when starting a draft?\nA: There is only one org per user\n\nQ: What should Brief.submittedBy contain while in draft—the creator’s user ID now, or null until submission?\nA: creator’s user ID \n\nQ: Any constraints or currency handling for budget to validate at draft-save time?\nA: None\n\nQ: For Producers who can see drafts, is access view-only in this story, or can they edit draft fields?\nA: access view-only",
+      "timestamp": "2026-03-17T10:27:00.735Z"
+    },
+    {
+      "id": "msg-1773743303758-sjs8gj431",
+      "role": "assistant",
+      "content": "Thanks—updated understanding captured with criteria. I have 1 question to finalize.",
+      "timestamp": "2026-03-17T10:28:23.758Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743338886-12tx0momr",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: With autosave creating a draft on entry, what should Cancel do—leave the draft as-is, delete it only if it has no user-entered content, or always delete it?\nA: always delete it",
+      "timestamp": "2026-03-17T10:28:58.886Z"
+    },
+    {
+      "id": "msg-1773743390305-sjwl7gcvv",
+      "role": "assistant",
+      "content": "Thanks—updated with autosave and cancel-delete behavior. I’m ready to proceed to spec.",
+      "timestamp": "2026-03-17T10:29:50.305Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743390314-fe964tp9y",
+      "role": "assistant",
+      "content": "Okay, let's see if we need to break this work item into parts...",
+      "timestamp": "2026-03-17T10:29:50.314Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743392485-bhpd8u4g7",
+      "role": "assistant",
+      "content": "Error: Chat request failed: 502",
+      "timestamp": "2026-03-17T10:29:52.485Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743392496-wpherb38z",
+      "role": "assistant",
+      "content": "Okay, let's see if we need to break this work item into parts...",
+      "timestamp": "2026-03-17T10:29:52.496Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773743520445-1g3113tdk",
+      "role": "assistant",
+      "content": "This item is small enough, so let's get the software architect to review this.",
+      "timestamp": "2026-03-17T10:32:00.445Z",
+      "persona": "Product Manager"
+    }
+  ]
+}

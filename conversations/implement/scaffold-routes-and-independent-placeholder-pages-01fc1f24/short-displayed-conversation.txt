@@ -1,0 +1,41 @@
+=== DISPLAYED CONVERSATION ===
+Generated: 2026-03-15T15:32:03.467Z
+
+--- Product Manager ---
+Hi! I’m ready to support the “Scaffold routes and independent placeholder pages for PoC screens” story. I have the product backlog and architecture context on hand. Are there any specific architecture entities or diagrams you’d like to highlight as most relevant to this work item?
+
+--- You ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- Product Manager ---
+Here’s my understanding of the Rivvy Portal UI scaffolding; I have 7 questions to finalize scope before spec.
+
+--- You ---
+Answers to your questions:
+
+Q: What frontend stack and router are we targeting (e.g., React Router, Next.js App/Pages Router, Vue Router)?
+A: React Router, by the way, this is a React/TS app
+
+Q: Should titles be rendered as an H1 element and match the exact strings provided?
+A: Sure but too detailed a question about html tags
+
+Q: Where should the data-testid live (root page container vs. title), and is there a required naming convention?
+A: No convention, don't add this to spec, the implementer will decide
+
+Q: Is a shared minimal layout acceptable, or must each page render without any shared layout shell?
+A: shared
+
+Q: Confirm that all routes should be publicly accessible with no guards or redirects for the PoC.
+A: confirmed
+
+Q: Should we add missing UI screens (Profile, Dashboard, Screening Room, Admin) to the architecture model for parity?
+A: No, they are they, don't worry about this
+
+Q: Are there repository path or naming conventions we must follow for route and component files?
+A: No
+
+--- Product Manager ---
+Thanks—your answers resolve my questions. I’m ready to proceed to spec with the scope and criteria below.
+
+--- Product Manager ---
+Okay, let's see if we need to break this work item into parts...

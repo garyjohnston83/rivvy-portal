@@ -1,0 +1,257 @@
+{
+  "threadKey": "project:d59d0daf-2ad7-4c9f-b916-3e4b7b06a373:panel:metamodel",
+  "projectId": "d59d0daf-2ad7-4c9f-b916-3e4b7b06a373",
+  "messages": [
+    {
+      "id": "d14ff63c-670a-4b6c-8471-7dc0fdbe351c",
+      "role": "system",
+      "personaId": null,
+      "taskId": null,
+      "content": "Switched to Test Engineer",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:43:36.735Z"
+    },
+    {
+      "id": "3bc9bf99-9fe8-4a24-8f28-73ae62298b9e",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "Test Strategy",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:43:50.198Z"
+    },
+    {
+      "id": "5c0ac399-3aa9-4a30-86a0-3557cbf28938",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"project_context\",\n  \"questions\": [\n    \"What is the current delivery scope and timeline (e.g., PoC for Screening Room now vs broader MVP), and which modules are in scope for this phase?\",\n    \"What are the top 3 risk areas or failure modes you’re most concerned about for Screening Room (e.g., video upload/playback reliability, timecode accuracy, comment locking on completion)?\",\n    \"How is the team structured for this phase (number of developers, any dedicated QA), and who owns test reviews and sign-off?\",\n    \"What is your planned release cadence and environment setup (dev/staging/production), including any constraints on test data in shared environments?\"\n  ],\n  \"summary\": \"We’re initiating a test strategy for the Rivvy Portal with an immediate focus on the Screening Room epic (single-project scope, comments tied to latest version, producer-controlled completion lock). We need clarity on delivery scope/timeline, key risks to prioritize, team/QA ownership, and environment/release cadence to shape the test approach.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "project_context",
+        "questions": [
+          "What is the current delivery scope and timeline (e.g., PoC for Screening Room now vs broader MVP), and which modules are in scope for this phase?",
+          "What are the top 3 risk areas or failure modes you’re most concerned about for Screening Room (e.g., video upload/playback reliability, timecode accuracy, comment locking on completion)?",
+          "How is the team structured for this phase (number of developers, any dedicated QA), and who owns test reviews and sign-off?",
+          "What is your planned release cadence and environment setup (dev/staging/production), including any constraints on test data in shared environments?"
+        ],
+        "summary": "We’re initiating a test strategy for the Rivvy Portal with an immediate focus on the Screening Room epic (single-project scope, comments tied to latest version, producer-controlled completion lock). We need clarity on delivery scope/timeline, key risks to prioritize, team/QA ownership, and environment/release cadence to shape the test approach."
+      },
+      "timestamp": "2026-03-18T10:43:50.206Z"
+    },
+    {
+      "id": "3731d6c8-ac43-4e5d-8692-0d4e974982d1",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: What is the current delivery scope and timeline (e.g., PoC for Screening Room now vs broader MVP), and which modules are in scope for this phase? A: PoC in March 2026, MVP in May 2026\n2. Q: What are the top 3 risk areas or failure modes you’re most concerned about for Screening Room (e.g., video upload/playback reliability, timecode accuracy, comment locking on completion)? A: Yes, those 3\n3. Q: How is the team structured for this phase (number of developers, any dedicated QA), and who owns test reviews and sign-off? A: Single engineer to build and test, no dedicated QAs\n4. Q: What is your planned release cadence and environment setup (dev/staging/production), including any constraints on test data in shared environments? A: Ad-hoc for now",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:45:57.300Z"
+    },
+    {
+      "id": "9b2788ee-12e7-4856-b1e5-fef7e8278313",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"test_levels\",\n  \"questions\": [\n    \"For the PoC vs MVP, which test levels are must-have for PoC: unit (frontend/backend), integration (API+DB), end-to-end browser flows, and any minimal performance/security/accessibility checks?\",\n    \"Do you have a preference for end-to-end tooling (Playwright vs Cypress) for Screening Room happy paths, or should we proceed with Playwright for speed and cross-browser later?\",\n    \"Can we use Testcontainers with PostgreSQL for backend integration tests in CI, or do you prefer an in-memory or shared DB for now?\",\n    \"Where will video files be stored in the PoC (local filesystem, S3, other), and should tests hit a real bucket/emulator or use mocks/stubs?\"\n  ],\n  \"summary\": \"Context captured: PoC targeted for March 2026 and MVP in May 2026. Top risks to prioritize are video upload/playback reliability, timecode accuracy, and strict comment locking when marked complete. A single engineer will build and test with ad-hoc releases. Next, we need to lock in test levels for PoC (unit/integration/E2E emphasis), choose an E2E tool, confirm DB integration approach (e.g., Testcontainers), and clarify video storage to shape integration/E2E scope.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "test_levels",
+        "questions": [
+          "For the PoC vs MVP, which test levels are must-have for PoC: unit (frontend/backend), integration (API+DB), end-to-end browser flows, and any minimal performance/security/accessibility checks?",
+          "Do you have a preference for end-to-end tooling (Playwright vs Cypress) for Screening Room happy paths, or should we proceed with Playwright for speed and cross-browser later?",
+          "Can we use Testcontainers with PostgreSQL for backend integration tests in CI, or do you prefer an in-memory or shared DB for now?",
+          "Where will video files be stored in the PoC (local filesystem, S3, other), and should tests hit a real bucket/emulator or use mocks/stubs?"
+        ],
+        "summary": "Context captured: PoC targeted for March 2026 and MVP in May 2026. Top risks to prioritize are video upload/playback reliability, timecode accuracy, and strict comment locking when marked complete. A single engineer will build and test with ad-hoc releases. Next, we need to lock in test levels for PoC (unit/integration/E2E emphasis), choose an E2E tool, confirm DB integration approach (e.g., Testcontainers), and clarify video storage to shape integration/E2E scope."
+      },
+      "timestamp": "2026-03-18T10:45:57.307Z"
+    },
+    {
+      "id": "f662d4cb-db0b-48e5-9628-5820317ebab9",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: For the PoC vs MVP, which test levels are must-have for PoC: unit (frontend/backend), integration (API+DB), end-to-end browser flows, and any minimal performance/security/accessibility checks? A: unit (frontend/backend), functional, integration (API+DB), end-to-end browser flows.  Light touch NFR related tests for MVP only\n2. Q: Do you have a preference for end-to-end tooling (Playwright vs Cypress) for Screening Room happy paths, or should we proceed with Playwright for speed and cross-browser later? A: Playwright\n3. Q: Can we use Testcontainers with PostgreSQL for backend integration tests in CI, or do you prefer an in-memory or shared DB for now? A: Testcontainers with PostgreSQL for backend integration tests in CI\n4. Q: Where will video files be stored in the PoC (local filesystem, S3, other), and should tests hit a real bucket/emulator or use mocks/stubs? A: S3 and tests hit a real bucket",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:48:20.746Z"
+    },
+    {
+      "id": "13cd905a-b374-4885-97b2-fd211d0f0e2d",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"coverage_targets\",\n  \"questions\": [\n    \"Approve these PoC CI coverage thresholds: Frontend unit ≥75% lines and ≥60% branches; Backend unit ≥80% lines and ≥70% branches. Adjust if needed.\",\n    \"Integration/E2E coverage proposal: Integration tests exercise all DB-touching repositories/services (happy + at least one failure path each); E2E covers these critical flows — (1) Producer uploads a new version; (2) Client comments on latest version and clicking a timecoded comment seeks playback; (3) Viewing a non-latest version prevents new comments and forces new comments to latest; (4) Producer marks complete, which locks comments/uploads, and can be reversed. OK?\",\n    \"Mutation testing: adopt for MVP only (targets: Backend PIT ≥60% mutation score; Frontend Stryker optional), and skip for PoC. Agree?\",\n    \"Confirm that performance, security, and accessibility coverage targets are excluded from PoC and deferred as light-touch checks for MVP.\"\n  ],\n  \"summary\": \"Test levels set for PoC: frontend/backend unit, functional, integration (API+PostgreSQL via Testcontainers), and Playwright E2E; NFR-style tests deferred to MVP. Video storage via S3 with tests using a real bucket. Next, we need to lock CI coverage thresholds for unit tests, define integration/E2E critical-path coverage expectations, decide on mutation testing timing/targets, and confirm exclusion of NFR coverage from the PoC.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "coverage_targets",
+        "questions": [
+          "Approve these PoC CI coverage thresholds: Frontend unit ≥75% lines and ≥60% branches; Backend unit ≥80% lines and ≥70% branches. Adjust if needed.",
+          "Integration/E2E coverage proposal: Integration tests exercise all DB-touching repositories/services (happy + at least one failure path each); E2E covers these critical flows — (1) Producer uploads a new version; (2) Client comments on latest version and clicking a timecoded comment seeks playback; (3) Viewing a non-latest version prevents new comments and forces new comments to latest; (4) Producer marks complete, which locks comments/uploads, and can be reversed. OK?",
+          "Mutation testing: adopt for MVP only (targets: Backend PIT ≥60% mutation score; Frontend Stryker optional), and skip for PoC. Agree?",
+          "Confirm that performance, security, and accessibility coverage targets are excluded from PoC and deferred as light-touch checks for MVP."
+        ],
+        "summary": "Test levels set for PoC: frontend/backend unit, functional, integration (API+PostgreSQL via Testcontainers), and Playwright E2E; NFR-style tests deferred to MVP. Video storage via S3 with tests using a real bucket. Next, we need to lock CI coverage thresholds for unit tests, define integration/E2E critical-path coverage expectations, decide on mutation testing timing/targets, and confirm exclusion of NFR coverage from the PoC."
+      },
+      "timestamp": "2026-03-18T10:48:20.755Z"
+    },
+    {
+      "id": "1371059b-5a14-4b02-a4fd-76498ed12b2f",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: Approve these PoC CI coverage thresholds: Frontend unit ≥75% lines and ≥60% branches; Backend unit ≥80% lines and ≥70% branches. Adjust if needed. A: Approve\n2. Q: Integration/E2E coverage proposal: Integration tests exercise all DB-touching repositories/services (happy + at least one failure path each); E2E covers these critical flows — (1) Producer uploads a new version; (2) Client comments on latest version and clicking a timecoded comment seeks playback; (3) Viewing a non-latest version prevents new comments and forces new comments to latest; (4) Producer marks complete, which locks comments/uploads, and can be reversed. OK? A: Ok\n3. Q: Mutation testing: adopt for MVP only (targets: Backend PIT ≥60% mutation score; Frontend Stryker optional), and skip for PoC. Agree? A: Agree\n4. Q: Confirm that performance, security, and accessibility coverage targets are excluded from PoC and deferred as light-touch checks for MVP. A: Confirmed",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:49:46.935Z"
+    },
+    {
+      "id": "0cb8491b-7815-4c62-8440-ccdf441a2ad6",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"tooling\",\n  \"questions\": [\n    \"Frontend: Confirm Vitest + React Testing Library (+ @testing-library/user-event), MSW for API mocking, c8/Istanbul for coverage, and ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged). OK?\",\n    \"Backend: Confirm JUnit 5 + Spring Boot Test, Testcontainers (PostgreSQL), Mockito for mocking, JaCoCo for coverage in CI, and PIT mutation testing starting in MVP. OK?\",\n    \"E2E (Playwright): Should PoC run Chromium-only in CI with trace/video/screenshots on failure, and expand to cross-browser in MVP?\",\n    \"Auth & Data for E2E: Use real login flow with seeded test users or a test-only auth bypass? How should test data be seeded/reset (API seeding endpoints vs DB reset/fixtures)?\",\n    \"S3 in CI: Do we have a dedicated test bucket and IAM creds for CI with a bucket prefix (e.g., e2e/{buildId}/) and a life-cycle rule (e.g., auto-delete after 7 days)?\"\n  ],\n  \"summary\": \"PoC scope: unit (FE/BE), functional, integration (API+Postgres via Testcontainers), and Playwright E2E. Approved unit coverage targets (FE 75/60, BE 80/70). Integration/E2E must cover critical Screening Room flows including upload, timecoded comments on latest version, non-latest read-only with forced-latest commenting, and reversible completion lock. Mutation testing deferred to MVP; NFR checks (perf/sec/a11y) also deferred. Next we need to confirm concrete tooling stacks for FE/BE/E2E, decide E2E authentication and data seeding/reset approach, and ensure S3 CI access and retention controls.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "tooling",
+        "questions": [
+          "Frontend: Confirm Vitest + React Testing Library (+ @testing-library/user-event), MSW for API mocking, c8/Istanbul for coverage, and ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged). OK?",
+          "Backend: Confirm JUnit 5 + Spring Boot Test, Testcontainers (PostgreSQL), Mockito for mocking, JaCoCo for coverage in CI, and PIT mutation testing starting in MVP. OK?",
+          "E2E (Playwright): Should PoC run Chromium-only in CI with trace/video/screenshots on failure, and expand to cross-browser in MVP?",
+          "Auth & Data for E2E: Use real login flow with seeded test users or a test-only auth bypass? How should test data be seeded/reset (API seeding endpoints vs DB reset/fixtures)?",
+          "S3 in CI: Do we have a dedicated test bucket and IAM creds for CI with a bucket prefix (e.g., e2e/{buildId}/) and a life-cycle rule (e.g., auto-delete after 7 days)?"
+        ],
+        "summary": "PoC scope: unit (FE/BE), functional, integration (API+Postgres via Testcontainers), and Playwright E2E. Approved unit coverage targets (FE 75/60, BE 80/70). Integration/E2E must cover critical Screening Room flows including upload, timecoded comments on latest version, non-latest read-only with forced-latest commenting, and reversible completion lock. Mutation testing deferred to MVP; NFR checks (perf/sec/a11y) also deferred. Next we need to confirm concrete tooling stacks for FE/BE/E2E, decide E2E authentication and data seeding/reset approach, and ensure S3 CI access and retention controls."
+      },
+      "timestamp": "2026-03-18T10:49:46.945Z"
+    },
+    {
+      "id": "1ff27511-aad5-4e74-a2f9-c849a94cc38b",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: Frontend: Confirm Vitest + React Testing Library (+ @testing-library/user-event), MSW for API mocking, c8/Istanbul for coverage, and ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged). OK? A: Ok\n2. Q: Backend: Confirm JUnit 5 + Spring Boot Test, Testcontainers (PostgreSQL), Mockito for mocking, JaCoCo for coverage in CI, and PIT mutation testing starting in MVP. OK? A: Ok\n3. Q: E2E (Playwright): Should PoC run Chromium-only in CI with trace/video/screenshots on failure, and expand to cross-browser in MVP? A: Chromium-only\n4. Q: Auth & Data for E2E: Use real login flow with seeded test users or a test-only auth bypass? How should test data be seeded/reset (API seeding endpoints vs DB reset/fixtures)? A: Use real login flow with seeded test users.  Potential seed data is added using liquibase\n5. Q: S3 in CI: Do we have a dedicated test bucket and IAM creds for CI with a bucket prefix (e.g., e2e/{buildId}/) and a life-cycle rule (e.g., auto-delete after 7 days)? A: We can create them as necessary",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:52:05.232Z"
+    },
+    {
+      "id": "21f709c4-0df5-4ecf-870c-433d27393a94",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"quality_gates\",\n  \"questions\": [\n    \"PR gates: Approve requiring lint, typecheck, frontend/backend unit tests with the approved coverage thresholds, and backend integration tests to pass on every PR; allow self-approval (single engineer) but PR required for all changes?\",\n    \"E2E execution: Run Playwright (Chromium-only) on every PR against a temporary preview/staging environment, or only on merges to main? Which environment should E2E target (dedicated staging vs ephemeral per-PR)?\",\n    \"Pre-deployment checks: Confirm mandatory Liquibase validate/migrate, a short smoke suite (upload, comment seek, complete/uncomplete), S3 write/read smoke, and rollback plan (e.g., DB backup + app rollback). OK?\",\n    \"Security gates for PoC: enable basic dependency and secret scanning in CI (e.g., OWASP/Snyk and git-secrets) now, or defer these to MVP?\"\n  ],\n  \"summary\": \"Tooling confirmed: FE Vitest + RTL + MSW with c8; BE JUnit5 + Spring Boot Test + Mockito + Testcontainers + JaCoCo; Playwright E2E (Chromium only in CI); real login with seeded users (Liquibase), S3 real bucket in CI (to be created with lifecycle/cleanup). Coverage targets approved (FE 75/60, BE 80/70). Integration/E2E must cover upload, timecoded comments on latest, non-latest read-only with forced-latest commenting, and reversible completion lock. Next, we need to formalize PR and CI quality gates, decide when/where E2E runs, define pre-deployment validations and rollback, and choose whether to include minimal security scanning for the PoC.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "quality_gates",
+        "questions": [
+          "PR gates: Approve requiring lint, typecheck, frontend/backend unit tests with the approved coverage thresholds, and backend integration tests to pass on every PR; allow self-approval (single engineer) but PR required for all changes?",
+          "E2E execution: Run Playwright (Chromium-only) on every PR against a temporary preview/staging environment, or only on merges to main? Which environment should E2E target (dedicated staging vs ephemeral per-PR)?",
+          "Pre-deployment checks: Confirm mandatory Liquibase validate/migrate, a short smoke suite (upload, comment seek, complete/uncomplete), S3 write/read smoke, and rollback plan (e.g., DB backup + app rollback). OK?",
+          "Security gates for PoC: enable basic dependency and secret scanning in CI (e.g., OWASP/Snyk and git-secrets) now, or defer these to MVP?"
+        ],
+        "summary": "Tooling confirmed: FE Vitest + RTL + MSW with c8; BE JUnit5 + Spring Boot Test + Mockito + Testcontainers + JaCoCo; Playwright E2E (Chromium only in CI); real login with seeded users (Liquibase), S3 real bucket in CI (to be created with lifecycle/cleanup). Coverage targets approved (FE 75/60, BE 80/70). Integration/E2E must cover upload, timecoded comments on latest, non-latest read-only with forced-latest commenting, and reversible completion lock. Next, we need to formalize PR and CI quality gates, decide when/where E2E runs, define pre-deployment validations and rollback, and choose whether to include minimal security scanning for the PoC."
+      },
+      "timestamp": "2026-03-18T10:52:05.241Z"
+    },
+    {
+      "id": "576c4c0c-785e-4e12-a97d-6df73bcea9e9",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: PR gates: Approve requiring lint, typecheck, frontend/backend unit tests with the approved coverage thresholds, and backend integration tests to pass on every PR; allow self-approval (single engineer) but PR required for all changes? A: Yes\n2. Q: E2E execution: Run Playwright (Chromium-only) on every PR against a temporary preview/staging environment, or only on merges to main? Which environment should E2E target (dedicated staging vs ephemeral per-PR)? A: only on merges to main\n3. Q: Pre-deployment checks: Confirm mandatory Liquibase validate/migrate, a short smoke suite (upload, comment seek, complete/uncomplete), S3 write/read smoke, and rollback plan (e.g., DB backup + app rollback). OK? A: Ok\n4. Q: Security gates for PoC: enable basic dependency and secret scanning in CI (e.g., OWASP/Snyk and git-secrets) now, or defer these to MVP? A: defer these to MVP",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:55:23.512Z"
+    },
+    {
+      "id": "47ad1143-0b19-4512-a787-82da305a0ae9",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"testing_principles\",\n  \"questions\": [\n    \"Development approach: adopt test-first for unit/integration on risky logic, with test-after acceptable for UI wiring. Approve?\",\n    \"Flaky tests policy: allow 1 retry for E2E; if still failing, fail the pipeline. Quarantine only with an issue opened and fix within 48 hours. Approve?\",\n    \"E2E data isolation: suite creates its own project/entities, uses a unique S3 key prefix per run, and cleans up at end to avoid polluting shared staging. Approve?\",\n    \"Documentation and naming: user-centric Given/When/Then-style test names, tests colocated with code, and a lightweight “Test Notes” doc listing critical E2E flows and test users/seeds. OK?\"\n  ],\n  \"summary\": \"Established so far: PoC (Mar 2026) then MVP (May 2026). Key risks: upload/playback reliability, timecode accuracy, completion lock behavior. Single engineer; ad-hoc releases. Test levels for PoC: FE/BE unit, functional, integration (API+Postgres via Testcontainers), and Playwright E2E (Chromium-only). S3 is real in CI; E2E uses real login with Liquibase-seeded users. Coverage targets approved (FE 75/60; BE 80/70). Integration/E2E must cover upload, timecoded comment seek, non-latest read-only with forced-latest commenting, and reversible completion lock. Tooling confirmed (Vitest/RTL/MSW; JUnit5/Spring Boot Test/Mockito/Testcontainers; JaCoCo; Playwright). Quality gates: PR requires lint, typecheck, unit + integration with thresholds; E2E runs on merges to main; pre-deploy smoke (Liquibase validate/migrate, S3 read/write, core flows); security scanning deferred to MVP. Now confirming testing principles: development approach, flaky test policy, E2E data isolation/cleanup, and lightweight test documentation/naming.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "testing_principles",
+        "questions": [
+          "Development approach: adopt test-first for unit/integration on risky logic, with test-after acceptable for UI wiring. Approve?",
+          "Flaky tests policy: allow 1 retry for E2E; if still failing, fail the pipeline. Quarantine only with an issue opened and fix within 48 hours. Approve?",
+          "E2E data isolation: suite creates its own project/entities, uses a unique S3 key prefix per run, and cleans up at end to avoid polluting shared staging. Approve?",
+          "Documentation and naming: user-centric Given/When/Then-style test names, tests colocated with code, and a lightweight “Test Notes” doc listing critical E2E flows and test users/seeds. OK?"
+        ],
+        "summary": "Established so far: PoC (Mar 2026) then MVP (May 2026). Key risks: upload/playback reliability, timecode accuracy, completion lock behavior. Single engineer; ad-hoc releases. Test levels for PoC: FE/BE unit, functional, integration (API+Postgres via Testcontainers), and Playwright E2E (Chromium-only). S3 is real in CI; E2E uses real login with Liquibase-seeded users. Coverage targets approved (FE 75/60; BE 80/70). Integration/E2E must cover upload, timecoded comment seek, non-latest read-only with forced-latest commenting, and reversible completion lock. Tooling confirmed (Vitest/RTL/MSW; JUnit5/Spring Boot Test/Mockito/Testcontainers; JaCoCo; Playwright). Quality gates: PR requires lint, typecheck, unit + integration with thresholds; E2E runs on merges to main; pre-deploy smoke (Liquibase validate/migrate, S3 read/write, core flows); security scanning deferred to MVP. Now confirming testing principles: development approach, flaky test policy, E2E data isolation/cleanup, and lightweight test documentation/naming."
+      },
+      "timestamp": "2026-03-18T10:55:23.521Z"
+    },
+    {
+      "id": "35f8acf2-3d3c-43ff-b71b-1bbcfee8128c",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: Development approach: adopt test-first for unit/integration on risky logic, with test-after acceptable for UI wiring. Approve? A: test-after only\n2. Q: Flaky tests policy: allow 1 retry for E2E; if still failing, fail the pipeline. Quarantine only with an issue opened and fix within 48 hours. Approve? A: Approve\n3. Q: E2E data isolation: suite creates its own project/entities, uses a unique S3 key prefix per run, and cleans up at end to avoid polluting shared staging. Approve? A: Approve\n4. Q: Documentation and naming: user-centric Given/When/Then-style test names, tests colocated with code, and a lightweight “Test Notes” doc listing critical E2E flows and test users/seeds. OK? A: OK",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:57:42.721Z"
+    },
+    {
+      "id": "df9b5845-8adc-4642-9776-e41e56c5f447",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"questions\",\n  \"section\": \"strategy_review\",\n  \"questions\": [\n    \"Confirm E2E target environment: should Playwright on merges to main run against a shared staging environment?\",\n    \"S3 usage by test level: keep real S3 only for E2E and pre-deploy smoke while mocking S3 in unit/integration tests to reduce flakiness/cost, or do you want backend integration tests to also hit real S3?\",\n    \"Post-deployment: include an immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Approve?\",\n    \"S3 hygiene: add a lifecycle rule to auto-delete test artifacts older than 7 days in addition to test-run cleanup. Approve?\"\n  ],\n  \"summary\": \"Current plan: PoC in Mar 2026 (MVP May 2026). Risks prioritized: upload/playback reliability, timecode accuracy, and completion lock. Single engineer; ad-hoc releases. PoC test levels: FE/BE unit, functional, integration (API+Postgres via Testcontainers), and Playwright E2E (Chromium-only). Real login with Liquibase-seeded users; S3 real bucket available. Coverage thresholds approved: FE unit 75% lines/60% branches; BE unit 80% lines/70% branches. Integration/E2E must cover: upload new version; comment on latest with timecode seek; non-latest read-only with forced-latest commenting; complete lock and reversible uncomplete. Tooling: Vitest/RTL/MSW/c8/ESLint/Prettier/TS; JUnit5/Spring Boot Test/Mockito/Testcontainers/JaCoCo; PIT in MVP. Quality gates: PRs require lint, typecheck, unit+integration with thresholds; self-approval allowed; E2E runs only on merges to main; pre-deploy smoke includes Liquibase validate/migrate, S3 read/write, and core flows; security scanning deferred to MVP. Principles: test-after only; E2E 1 retry then fail with quarantine via issue and 48h fix; E2E data isolation with unique S3 prefix and cleanup; user-centric test naming and lightweight Test Notes. Pending: confirm E2E target environment (staging), finalize S3 use per test level, agree on post-deploy smoke/rollback, and S3 lifecycle cleanup.\"\n}",
+      "structuredResponse": {
+        "phase": "questions",
+        "section": "strategy_review",
+        "questions": [
+          "Confirm E2E target environment: should Playwright on merges to main run against a shared staging environment?",
+          "S3 usage by test level: keep real S3 only for E2E and pre-deploy smoke while mocking S3 in unit/integration tests to reduce flakiness/cost, or do you want backend integration tests to also hit real S3?",
+          "Post-deployment: include an immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Approve?",
+          "S3 hygiene: add a lifecycle rule to auto-delete test artifacts older than 7 days in addition to test-run cleanup. Approve?"
+        ],
+        "summary": "Current plan: PoC in Mar 2026 (MVP May 2026). Risks prioritized: upload/playback reliability, timecode accuracy, and completion lock. Single engineer; ad-hoc releases. PoC test levels: FE/BE unit, functional, integration (API+Postgres via Testcontainers), and Playwright E2E (Chromium-only). Real login with Liquibase-seeded users; S3 real bucket available. Coverage thresholds approved: FE unit 75% lines/60% branches; BE unit 80% lines/70% branches. Integration/E2E must cover: upload new version; comment on latest with timecode seek; non-latest read-only with forced-latest commenting; complete lock and reversible uncomplete. Tooling: Vitest/RTL/MSW/c8/ESLint/Prettier/TS; JUnit5/Spring Boot Test/Mockito/Testcontainers/JaCoCo; PIT in MVP. Quality gates: PRs require lint, typecheck, unit+integration with thresholds; self-approval allowed; E2E runs only on merges to main; pre-deploy smoke includes Liquibase validate/migrate, S3 read/write, and core flows; security scanning deferred to MVP. Principles: test-after only; E2E 1 retry then fail with quarantine via issue and 48h fix; E2E data isolation with unique S3 prefix and cleanup; user-centric test naming and lightweight Test Notes. Pending: confirm E2E target environment (staging), finalize S3 use per test level, agree on post-deploy smoke/rollback, and S3 lifecycle cleanup."
+      },
+      "timestamp": "2026-03-18T10:57:42.728Z"
+    },
+    {
+      "id": "00cec252-736a-4343-8573-63862f916278",
+      "role": "user",
+      "personaId": null,
+      "taskId": "test-engineer--test-strategy",
+      "content": "1. Q: Confirm E2E target environment: should Playwright on merges to main run against a shared staging environment? A: Confirmed\n2. Q: S3 usage by test level: keep real S3 only for E2E and pre-deploy smoke while mocking S3 in unit/integration tests to reduce flakiness/cost, or do you want backend integration tests to also hit real S3? A: backend integration tests doesn't need real S3\n3. Q: Post-deployment: include an immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Approve? A: Approve\n4. Q: S3 hygiene: add a lifecycle rule to auto-delete test artifacts older than 7 days in addition to test-run cleanup. Approve? A: Approve",
+      "structuredResponse": null,
+      "timestamp": "2026-03-18T10:59:43.825Z"
+    },
+    {
+      "id": "82de8b76-158f-463d-bef6-b615f73fed8e",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "{\n  \"phase\": \"ready\",\n  \"section\": \"final_review\",\n  \"questions\": [],\n  \"summary\": \"Recap: Scope/timeline PoC Mar 2026, MVP May 2026. Key risks: video upload/playback reliability, timecode accuracy, and completion lock behavior. Team: single engineer; ad-hoc releases. Test levels for PoC: (1) Frontend unit/functional with Vitest + React Testing Library + MSW, c8 for coverage (targets FE unit ≥75% lines/≥60% branches); (2) Backend unit with JUnit 5 + Mockito, JaCoCo (targets BE unit ≥80% lines/≥70% branches); (3) Backend integration with Spring Boot Test + Testcontainers (PostgreSQL), S3 mocked; exercise all DB-related repositories/services with happy path plus at least one failure path each; (4) End-to-end with Playwright (Chromium-only), running on merges to main against shared staging; real login using Liquibase-seeded users; critical flows covered: upload new version; comment on latest and clicking timecode seeks; viewing non-latest prevents new comments and forces comments to latest; producer marks complete (locks comments/uploads) and can reverse. Deferred to MVP: mutation testing (Backend PIT ≥60%; Frontend Stryker optional), light-touch performance/security/accessibility checks, dependency/secret scanning. Tooling/process: ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged); JaCoCo in CI; Playwright traces/screenshots on failure. S3: real bucket for E2E and pre-deploy smoke only; backend integration tests mock S3; unique S3 key prefix per run, test cleanup, plus 7-day lifecycle auto-delete. Quality gates: PRs require lint, typecheck, FE/BE unit tests meeting thresholds, and backend integration tests; self-approval allowed but PR required. CI: E2E runs only on merges to main against staging. Pre-deployment: Liquibase validate/migrate, S3 write/read smoke, and brief smoke of core flows; defined rollback plan (DB backup + app rollback). Post-deployment: immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Testing principles: test-after development; flaky E2E allowed 1 retry then fail, quarantine with issue and 48h fix window; E2E data isolation (own entities, unique S3 prefix, cleanup); user-centric Given/When/Then naming, tests colocated with code, lightweight Test Notes documenting critical E2E flows and seeded users. Please confirm to save this test strategy.\"\n}",
+      "structuredResponse": {
+        "phase": "ready",
+        "section": "final_review",
+        "questions": [],
+        "summary": "Recap: Scope/timeline PoC Mar 2026, MVP May 2026. Key risks: video upload/playback reliability, timecode accuracy, and completion lock behavior. Team: single engineer; ad-hoc releases. Test levels for PoC: (1) Frontend unit/functional with Vitest + React Testing Library + MSW, c8 for coverage (targets FE unit ≥75% lines/≥60% branches); (2) Backend unit with JUnit 5 + Mockito, JaCoCo (targets BE unit ≥80% lines/≥70% branches); (3) Backend integration with Spring Boot Test + Testcontainers (PostgreSQL), S3 mocked; exercise all DB-related repositories/services with happy path plus at least one failure path each; (4) End-to-end with Playwright (Chromium-only), running on merges to main against shared staging; real login using Liquibase-seeded users; critical flows covered: upload new version; comment on latest and clicking timecode seeks; viewing non-latest prevents new comments and forces comments to latest; producer marks complete (locks comments/uploads) and can reverse. Deferred to MVP: mutation testing (Backend PIT ≥60%; Frontend Stryker optional), light-touch performance/security/accessibility checks, dependency/secret scanning. Tooling/process: ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged); JaCoCo in CI; Playwright traces/screenshots on failure. S3: real bucket for E2E and pre-deploy smoke only; backend integration tests mock S3; unique S3 key prefix per run, test cleanup, plus 7-day lifecycle auto-delete. Quality gates: PRs require lint, typecheck, FE/BE unit tests meeting thresholds, and backend integration tests; self-approval allowed but PR required. CI: E2E runs only on merges to main against staging. Pre-deployment: Liquibase validate/migrate, S3 write/read smoke, and brief smoke of core flows; defined rollback plan (DB backup + app rollback). Post-deployment: immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Testing principles: test-after development; flaky E2E allowed 1 retry then fail, quarantine with issue and 48h fix window; E2E data isolation (own entities, unique S3 prefix, cleanup); user-centric Given/When/Then naming, tests colocated with code, lightweight Test Notes documenting critical E2E flows and seeded users. Please confirm to save this test strategy."
+      },
+      "timestamp": "2026-03-18T10:59:43.836Z"
+    },
+    {
+      "id": "0fe7dcf2-b003-49bb-a95a-b936b1beea14",
+      "role": "assistant",
+      "personaId": "test-engineer",
+      "taskId": "test-engineer--test-strategy",
+      "content": "Test Strategy complete.",
+      "structuredResponse": {
+        "type": "completion-chip",
+        "artifactId": "test-strategy",
+        "artifactName": "TEST-STRATEGY.MD",
+        "taskId": "test-engineer--test-strategy",
+        "personaId": "test-engineer",
+        "timestamp": "2026-03-18T11:01:57.949Z"
+      },
+      "timestamp": "2026-03-18T11:01:57.949Z"
+    }
+  ],
+  "activePersonaId": null,
+  "activeTaskId": null,
+  "summary": null,
+  "summarisedUpToIndex": 0,
+  "createdAt": "2026-03-18T10:43:36.727Z",
+  "updatedAt": "2026-03-18T11:01:57.951Z"
+}

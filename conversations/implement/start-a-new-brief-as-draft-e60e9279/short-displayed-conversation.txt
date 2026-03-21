@@ -1,0 +1,65 @@
+=== DISPLAYED CONVERSATION ===
+Generated: 2026-03-17T10:31:03.686Z
+
+--- Product Manager ---
+Welcome—ready to support the “Start a new Brief as draft” story. I have the product backlog and full architecture model on hand; would you like to highlight any specific entities or diagrams (e.g., New Brief screen, Brief/Organization data, Portal API) as most relevant?
+
+--- You ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- Product Manager ---
+Error: Chat request failed: 502
+
+--- You ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- Product Manager ---
+Error: Chat request failed: 502
+
+--- You ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- Product Manager ---
+Here’s my understanding of “Start a new Brief as draft”; I have 6 questions to confirm details.
+
+--- You ---
+Answers to your questions:
+
+Q: When is the draft created—only on explicit Save/Start, or immediately upon landing on /new-brief (autosave)?
+A: autosave
+
+Q: Should title be optional in draft (enforced only at submit), matching the story’s wording?
+A: Yes
+
+Q: For users in multiple orgs, do we always use the current org context, or allow explicit org selection when starting a draft?
+A: There is only one org per user
+
+Q: What should Brief.submittedBy contain while in draft—the creator’s user ID now, or null until submission?
+A: creator’s user ID 
+
+Q: Any constraints or currency handling for budget to validate at draft-save time?
+A: None
+
+Q: For Producers who can see drafts, is access view-only in this story, or can they edit draft fields?
+A: access view-only
+
+--- Product Manager ---
+Thanks—updated understanding captured with criteria. I have 1 question to finalize.
+
+--- You ---
+Answers to your questions:
+
+Q: With autosave creating a draft on entry, what should Cancel do—leave the draft as-is, delete it only if it has no user-entered content, or always delete it?
+A: always delete it
+
+--- Product Manager ---
+Thanks—updated with autosave and cancel-delete behavior. I’m ready to proceed to spec.
+
+--- Product Manager ---
+Okay, let's see if we need to break this work item into parts...
+
+--- Product Manager ---
+Error: Chat request failed: 502
+
+--- Product Manager ---
+Okay, let's see if we need to break this work item into parts...

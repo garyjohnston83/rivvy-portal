@@ -1,0 +1,5206 @@
+=== IMPLEMENT ASSISTANT CONVERSATION TRANSCRIPT ===
+Generated: 2026-03-16T15:47:50.882Z
+Session ID: 1f086144-9a42-4797-ac36-73abc61d498f
+Created: 2026-03-16T15:13:30.156Z
+
+--- [SYSTEM] (phase: bootstrap) @ 2026-03-16T15:13:30.156Z ---
+You are an Implementation Planning Assistant starting a new session with rich product and architecture context.
+
+YOUR ROLE:
+You are greeting the user and acknowledging the feature they are about to work on. You have been provided with product backlog context and architecture meta-model context to help you understand the overall system.
+
+WORK ITEM CONTEXT:
+- Title: Sign in with valid credentials
+- Type: STORY
+- Description: As a user, I can sign in with my email and password and be routed by role.
+
+Acceptance Criteria:
+- Given an active account with valid email and password, when I submit the form, then I am signed in and routed to /admin if Admin, or /dashboard if Client/Producer.
+- Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts for 180 days unless I sign out.
+- Given I did not check Remember me, when I sign in successfully, then my session follows the configured standard (non-remember-me) timeout.
+
+PRODUCT BACKLOG SUMMARY:
+- Initiative: Prove Client Self-Service Creative Delivery (PoC)
+  Description: Validate end-to-end self-service flow across key roles with minimal viable (happy-path) experiences by end of March 2026. Unified PoC DoD applies to all epics.
+  - Epic: Technical Foundations
+    Description: Baseline capabilities required to support PoC user flows. DoD: supports happy-path flows, manual QA pass, no critical defects.
+    - Feature: Backend domain and data foundation
+      Description: Define the domain model and persistence for all in-scope entities per architecture; apply schema and include minimal foundational seed data. Excludes business workflows and external integrations.
+    - Feature: Frontend application shell
+      Description: Initialize the React/TypeScript application with routing and independent placeholder pages for PoC screens. Excludes global navigation, role-aware behavior, and business logic.
+  - Epic: Login
+    Description: Sign in and password reset (happy path). DoD: demoable for 1 client org; manual QA pass; no critical defects; owner walkthrough sign-off.
+    - Feature: Email/Password Sign-In
+      Description: Authenticate users at /login with enumeration-safe messaging, lockout policy, remember-me support, and role-based routing.
+    - Feature: Forgot Password Flow
+      Description: Allow users to request a reset email and set a new password meeting complexity rules with enumeration-safe messaging.
+    - Feature: Invite Acceptance & First-Time Password Setup
+      Description: Support invited users with a temporary password to set a permanent password on first login and auto-sign-in.
+    - Feature: Post-Login Role & Organization Routing
+      Description: Route users to the correct destination after successful login based on their role (single-organization users).
+  - Epic: User Profile
+    Description: View/edit profile and manage password (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+    - Feature: View my profile (read-only)
+      Description: Provide an authenticated, read-only profile page at /profile showing core user details and linking to the existing password reset flow.
+  - Epic: Client Dashboard
+    Description: Entry to Screening Room, Brand Vault, and New Brief with basic status (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+    - Feature: Quick Access Navigation Tiles
+      Description: Display three prominent tiles linking to key client workflows. Nav-only PoC: no summary widgets.
+    - Feature: Role-Gated Dashboard Routing
+      Description: Ensure users land on the correct dashboard for their role when they visit /dashboard.
+    - Feature: Organization Context Display
+      Description: Show the current organization’s name in the page header for single-org users.
+  - Epic: New Brief
+    Description: Create/submit briefs; producer can view and lightly edit (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+  - Epic: Brand Vault
+    Description: Upload/manage brand assets with basic tagging at org/project level (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+  - Epic: Screening Room
+    Description: View videos, leave timecoded comments, basic versioning, and final approval (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+  - Epic: Rivvy Producer Dashboard
+    Description: Cross-org visibility to briefs, videos, comments (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+  - Epic: Rivvy Admin
+    Description: Create orgs, manage users/roles, assign producers (happy path). DoD: demoable end-to-end; manual QA pass; no critical defects; owner walkthrough sign-off.
+- Initiative: Operationalise & Scale Client Delivery (MVP)
+  Description: Production-ready depth, hardened workflows, and scaled operations; target April 2026 with 99% availability. Parallelizable with late-stage PoC.
+  - Epic: Brief Intake & Triage
+    Description: Templates, producer assignment, and prioritization. Must-have for April 2026 launch.
+  - Epic: Project & Workflow Management
+    Description: Project structure, statuses, and tasking through to approval. Must-have for April 2026 launch.
+  - Epic: Approvals & Audit Trail
+    Description: Configurable approval gates, signoff, and decision traceability. Must-have for April 2026 launch.
+  - Epic: Collaboration & Versioning
+    Description: Comment threads, resolves, version history, and version compare to streamline review cycles.
+  - Epic: Brand Vault Enhancements
+    Description: Folders/collections, richer metadata, and fine-grained permissions.
+  - Epic: Producer Multi-Org Productivity
+    Description: Advanced filtering, search, and bulk actions across multiple client orgs.
+  - Epic: Notifications & Activity Feed
+    Description: Timely alerts and consolidated activity to reduce cycle time and misses.
+  - Epic: Admin & Org Management
+    Description: Invitations, role administration, and org settings for scaled operations.
+  - Epic: Reliability & Support Readiness
+    Description: Uptime reporting, incident process, on-call/ownership, basic status comms, and recovery runbooks. Launch gate to meet 99% availability.
+
+ARCHITECTURE META-MODEL REFERENCE:
+# Architecture Meta-Model Reference
+
+This section describes the entity types and relationship types in the Architecture Meta-Model. Use this reference to understand the structure of the architecture model data that follows.
+
+> **Note:** `ui_contracts` is excluded from the model data below. It is a deprecated duplicate of `interfaces` and is pending removal.
+
+## Entity Types
+
+### Application Architecture
+
+- **`applications`** -- Top-level deployable systems
+- **`app_components`** -- Human-defined grouping of service types/tiers/layers within an application on a technical basis (e.g. "Web Tier", "Persistence Tier"), so that certain important things can be stated about this grouping e.g. "our company uses React/TS for all frontends" + if a project has 3 services whose parent app_component is "UI Tier", then those 3 deployed services should be React/TS according to company technical standards.
+- **`services`** -- Runtime components within an application
+- **`interfaces`** -- API boundaries exposed by services
+- **`endpoints`** -- Individual operations on an interface
+- **`application_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every application_point row maps to exactly one concrete entity (application, app_component, service, or interface). This mechanism allows relationships like `data_movements` to flexibly reference any level of the application architecture as source/target. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Code-Level Entities
+
+- **`classes`** -- Code-level entities. E.g. if Java, it's a Java class. Used in UML "Class diagrams".
+- **`methods`** -- Code-level methods on classes. Used in "Class diagrams" and referenced in other diagrams e.g. a sequence diagram might show an internal calculation `calcMyNumbers(...)`.
+
+### Data Entities
+
+- **`logical_data_entities`** -- Conceptual data objects (DTOs), often representing the actual shape of data transferring between applications in APIs.
+- **`logical_data_attributes`** -- Fields on logical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`physical_data_entities`** -- Persisted storage structures (database tables, collections, physical files).
+- **`physical_data_attributes`** -- Columns on physical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`data_entity_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every data_entity_point maps to exactly one logical or physical data entity. Allows relationships to flexibly reference either type. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Business Domain
+
+- **`business_users`** -- Actors/roles who use the system.
+- **`business_processes`** -- High-level business workflows.
+- **`process_activities`** -- Steps within a business process.
+- **`business_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every business_point maps to either a `business_process` or an `activity`. Allows relationships to reference either a very high-level business process or a medium-to-high level business activity. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`app_business_points`** -- **Super-polymorphic wrapper**. Allows the flexible choice of either an `application_point` or a `business_point` in a relationship. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`interactions`** -- A flexible definition allowing you to define any kind of interaction that a user may have with `application_points` or `business_points` (hence the use of `app_business_points`). Architecturally loose by design.
+
+### State Machine
+
+- **`events`** -- Events in a state machine model.
+- **`states`** -- States in a state machine model.
+- **`state_transitions`** -- Transitions between states in a state machine.
+
+### Activity/Workflow
+
+- **`activities`** -- Steps in an activity/workflow diagram.
+- **`activity_flows`** -- Connections between activities in a workflow.
+- **`activity_partitions`** -- Swimlanes/groupings in activity diagrams.
+
+### UI Architecture
+
+- **`ui_screens`** -- Frontend pages/views.
+- **`ui_components`** -- Component/element within a screen (not a UI widget). What would be defined in multiple frontend frameworks in code in `src/components`. Components build on top of each other e.g. basic components are used in the definition of parent, more complex components.
+- **`ui_actions`** -- User-triggered or system-triggered actions in UI.
+- **`ui_characteristics`** -- Business features / UX characteristics linked to services that are "UI tier" i.e. frontend UIs.
+
+### Business Logic & Packaging
+
+- **`business_logics`** -- Business rules/domain logic owned by a service.
+- **`package_sets`** -- A set of "packages" that allows someone to state their full src directory/package structure.
+- **`packages`** -- Code packaging (think Java Package, albeit this word is different in other languages e.g. Python Module).
+- **`package_set_default_rules`** -- Auto-resolution rules for package set selection.
+
+## Relationship Types
+
+- **`business_user_business_points`** -- Links business users to business points (polymorphic: business processes or activities).
+- **`application_point_business_points`** -- Links application points to business points.
+- **`logical_data_entity_relationships`** -- Links between logical data entities (e.g. FK-style references, associations).
+- **`logical_data_entity_physical_data_entities`** -- Maps logical entities to physical entities (logical<->physical mapping).
+- **`logical_data_attribute_physical_data_attributes`** -- Maps logical attributes to physical attributes.
+- **`data_movements`** -- Data flowing between application points, optionally referencing a data entity point or interface.
+- **`interface_logical_entities`** -- Links interfaces to the logical entities they expose.
+- **`ui_workflow_transitions`** -- Navigation/flow between UI screens.
+- **`application_point_business_logics`** -- Links application points to business logic rules.
+
+## Important Notes on Polymorphic Wrappers
+
+The following entity types are **polymorphic wrappers** that are **automatically managed by the backend**. The LLM must **NEVER** create, update, or delete these entities directly. They are created and maintained automatically when their corresponding concrete entities are saved:
+
+1. **`application_points`** -- Auto-created for applications, app_components, services, and interfaces
+2. **`data_entity_points`** -- Auto-created for logical_data_entities and physical_data_entities
+3. **`business_points`** -- Auto-created for business_processes and activities
+4. **`app_business_points`** -- Auto-created to bridge application_points and business_points
+
+
+ARCHITECTURE META-MODEL SUMMARY:
+Services:
+  - Rivvy Portal UI (services)
+  - Rivvy Portal Services (services)
+  - Rivvy Portal DB (services)
+  - AWS S3 Bucket (services)
+Data Entities:
+  - Organization (logicalDataEntities)
+  - UserAccount (logicalDataEntities)
+  - OrganizationMember (logicalDataEntities)
+  - Role (logicalDataEntities)
+  - OrgRoleAssignment (logicalDataEntities)
+  - ProducerAssignment (logicalDataEntities)
+  - Brief (logicalDataEntities)
+  - BriefItem (logicalDataEntities)
+  - BriefItemDeliverable (logicalDataEntities)
+  - Project (logicalDataEntities)
+  - Video (logicalDataEntities)
+  - StorageObject (logicalDataEntities)
+  - VideoVersion (logicalDataEntities)
+  - ReviewComment (logicalDataEntities)
+  - CommentMention (logicalDataEntities)
+  - ApprovalRequest (logicalDataEntities)
+  - ApprovalEvent (logicalDataEntities)
+  - BrandAsset (logicalDataEntities)
+  - BrandAssetVersion (logicalDataEntities)
+  - organization (physicalDataEntities)
+  - user_account (physicalDataEntities)
+  - organization_member (physicalDataEntities)
+  - role (physicalDataEntities)
+  - org_role_assignment (physicalDataEntities)
+  - producer_assignment (physicalDataEntities)
+  - brief (physicalDataEntities)
+  - brief_item (physicalDataEntities)
+  - brief_item_deliverable (physicalDataEntities)
+  - project (physicalDataEntities)
+  - video (physicalDataEntities)
+  - storage_object (physicalDataEntities)
+  - video_version (physicalDataEntities)
+  - review_comment (physicalDataEntities)
+  - comment_mention (physicalDataEntities)
+  - approval_request (physicalDataEntities)
+  - approval_event (physicalDataEntities)
+  - brand_asset (physicalDataEntities)
+  - brand_asset_version (physicalDataEntities)
+Interfaces:
+  - Portal API (interfaces)
+Relationships:
+  - Rivvy Portal Services --[exposes]--> Portal API
+
+INSTRUCTIONS:
+1. Acknowledge the feature/work item the user is about to implement
+2. Acknowledge that you have access to the product backlog and architecture context
+3. Respond with a short, welcoming message (2-3 sentences maximum)
+4. Ask the user if there are any specific architecture entities or diagrams they would like to highlight as relevant to this work item
+
+RULES - DO NOT VIOLATE:
+1. DO NOT ask detailed clarifying questions about requirements
+2. DO NOT propose solutions or implementation approaches
+3. DO NOT refine requirements or suggest changes to the work item
+4. DO NOT generate code, specs, or technical details
+5. DO NOT call MCP tools or any external tools
+6. Keep your response short and welcoming - this is just an initial greeting
+7. Only ask about highlighting relevant architecture context, nothing else
+
+RESPONSE STYLE:
+- Short and welcoming (2-3 sentences maximum)
+- Acknowledge the feature by name
+- Mention you have product and architecture context available
+- End with a simple question asking about relevant architecture/diagrams
+
+--- [USER] (phase: bootstrap) @ 2026-03-16T15:13:30.157Z ---
+
+
+--- [ASSISTANT] (phase: bootstrap) @ 2026-03-16T15:13:36.895Z ---
+Hi—ready to help with the “Sign in with valid credentials” story. I have the product backlog and architecture context available. Are there any specific architecture entities or diagrams you’d like to highlight as most relevant for this work item?
+
+--- [SYSTEM] (phase: refine) @ 2026-03-16T15:14:58.258Z ---
+You are an Implementation Planner assistant that helps clarify and refine work item requirements before implementation begins.
+
+## CONTEXT
+Work Item: Sign in with valid credentials
+Type: STORY
+Description: As a user, I can sign in with my email and password and be routed by role.
+
+Acceptance Criteria:
+- Given an active account with valid email and password, when I submit the form, then I am signed in and routed to /admin if Admin, or /dashboard if Client/Producer.
+- Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts for 180 days unless I sign out.
+- Given I did not check Remember me, when I sign in successfully, then my session follows the configured standard (non-remember-me) timeout.
+
+## Architecture Meta-Model Reference
+# Architecture Meta-Model Reference
+
+This section describes the entity types and relationship types in the Architecture Meta-Model. Use this reference to understand the structure of the architecture model data that follows.
+
+> **Note:** `ui_contracts` is excluded from the model data below. It is a deprecated duplicate of `interfaces` and is pending removal.
+
+## Entity Types
+
+### Application Architecture
+
+- **`applications`** -- Top-level deployable systems
+- **`app_components`** -- Human-defined grouping of service types/tiers/layers within an application on a technical basis (e.g. "Web Tier", "Persistence Tier"), so that certain important things can be stated about this grouping e.g. "our company uses React/TS for all frontends" + if a project has 3 services whose parent app_component is "UI Tier", then those 3 deployed services should be React/TS according to company technical standards.
+- **`services`** -- Runtime components within an application
+- **`interfaces`** -- API boundaries exposed by services
+- **`endpoints`** -- Individual operations on an interface
+- **`application_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every application_point row maps to exactly one concrete entity (application, app_component, service, or interface). This mechanism allows relationships like `data_movements` to flexibly reference any level of the application architecture as source/target. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Code-Level Entities
+
+- **`classes`** -- Code-level entities. E.g. if Java, it's a Java class. Used in UML "Class diagrams".
+- **`methods`** -- Code-level methods on classes. Used in "Class diagrams" and referenced in other diagrams e.g. a sequence diagram might show an internal calculation `calcMyNumbers(...)`.
+
+### Data Entities
+
+- **`logical_data_entities`** -- Conceptual data objects (DTOs), often representing the actual shape of data transferring between applications in APIs.
+- **`logical_data_attributes`** -- Fields on logical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`physical_data_entities`** -- Persisted storage structures (database tables, collections, physical files).
+- **`physical_data_attributes`** -- Columns on physical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`data_entity_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every data_entity_point maps to exactly one logical or physical data entity. Allows relationships to flexibly reference either type. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Business Domain
+
+- **`business_users`** -- Actors/roles who use the system.
+- **`business_processes`** -- High-level business workflows.
+- **`process_activities`** -- Steps within a business process.
+- **`business_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every business_point maps to either a `business_process` or an `activity`. Allows relationships to reference either a very high-level business process or a medium-to-high level business activity. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`app_business_points`** -- **Super-polymorphic wrapper**. Allows the flexible choice of either an `application_point` or a `business_point` in a relationship. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`interactions`** -- A flexible definition allowing you to define any kind of interaction that a user may have with `application_points` or `business_points` (hence the use of `app_business_points`). Architecturally loose by design.
+
+### State Machine
+
+- **`events`** -- Events in a state machine model.
+- **`states`** -- States in a state machine model.
+- **`state_transitions`** -- Transitions between states in a state machine.
+
+### Activity/Workflow
+
+- **`activities`** -- Steps in an activity/workflow diagram.
+- **`activity_flows`** -- Connections between activities in a workflow.
+- **`activity_partitions`** -- Swimlanes/groupings in activity diagrams.
+
+### UI Architecture
+
+- **`ui_screens`** -- Frontend pages/views.
+- **`ui_components`** -- Component/element within a screen (not a UI widget). What would be defined in multiple frontend frameworks in code in `src/components`. Components build on top of each other e.g. basic components are used in the definition of parent, more complex components.
+- **`ui_actions`** -- User-triggered or system-triggered actions in UI.
+- **`ui_characteristics`** -- Business features / UX characteristics linked to services that are "UI tier" i.e. frontend UIs.
+
+### Business Logic & Packaging
+
+- **`business_logics`** -- Business rules/domain logic owned by a service.
+- **`package_sets`** -- A set of "packages" that allows someone to state their full src directory/package structure.
+- **`packages`** -- Code packaging (think Java Package, albeit this word is different in other languages e.g. Python Module).
+- **`package_set_default_rules`** -- Auto-resolution rules for package set selection.
+
+## Relationship Types
+
+- **`business_user_business_points`** -- Links business users to business points (polymorphic: business processes or activities).
+- **`application_point_business_points`** -- Links application points to business points.
+- **`logical_data_entity_relationships`** -- Links between logical data entities (e.g. FK-style references, associations).
+- **`logical_data_entity_physical_data_entities`** -- Maps logical entities to physical entities (logical<->physical mapping).
+- **`logical_data_attribute_physical_data_attributes`** -- Maps logical attributes to physical attributes.
+- **`data_movements`** -- Data flowing between application points, optionally referencing a data entity point or interface.
+- **`interface_logical_entities`** -- Links interfaces to the logical entities they expose.
+- **`ui_workflow_transitions`** -- Navigation/flow between UI screens.
+- **`application_point_business_logics`** -- Links application points to business logic rules.
+
+## Important Notes on Polymorphic Wrappers
+
+The following entity types are **polymorphic wrappers** that are **automatically managed by the backend**. The LLM must **NEVER** create, update, or delete these entities directly. They are created and maintained automatically when their corresponding concrete entities are saved:
+
+1. **`application_points`** -- Auto-created for applications, app_components, services, and interfaces
+2. **`data_entity_points`** -- Auto-created for logical_data_entities and physical_data_entities
+3. **`business_points`** -- Auto-created for business_processes and activities
+4. **`app_business_points`** -- Auto-created to bridge application_points and business_points
+
+
+Selected Architecture Context:
+- Entity IDs: business_users::bu-mmkz7g4w-fh2m5, business_users::bu-mmkz7g4w-4kozk, business_users::bu-mmkz7g4w-1izl7, services::svc-mlxwlakm-ukz3q, services::svc-mlxwld2d-zzncf, services::svc-mlxwld7t-6k24g, logical_data_entities::lde-mmq60ts2-r94lu, logical_data_entities::lde-mmq60ts2-wsn91, logical_data_entities::lde-mmq60ts2-y0762, logical_data_entities::lde-mmq60ts2-1ipbw, logical_data_entities::lde-mmq60ts2-8n0nx, logical_data_entities::lde-mmq60ts2-r55ov, logical_data_entities::lde-mmq60ts2-xkrll, logical_data_entities::lde-mmq60ts2-3sufv, logical_data_entities::lde-mmq60ts2-j5prk, logical_data_entities::lde-mmq60ts2-q4oac, logical_data_entities::lde-mmq60ts2-i702v, logical_data_entities::lde-mmq60ts2-a4un6, logical_data_entities::lde-mmq60ts2-nyk9m, logical_data_entities::lde-mmq60ts2-xesnn, logical_data_entities::lde-mmq60ts2-jnlmp, logical_data_entities::lde-mmq60ts2-no393, logical_data_entities::lde-mmq60ts2-xxiaf, logical_data_entities::lde-mmq60ts2-zwxx9, logical_data_entities::lde-mmq60ts2-qvkkw, physical_data_entities::pde-mmq60ts2-778mh, physical_data_entities::pde-mmq60ts2-m459u, physical_data_entities::pde-mmq60ts2-zx72q, physical_data_entities::pde-mmq60ts2-cgbgt, physical_data_entities::pde-mmq60ts2-twp3t, physical_data_entities::pde-mmq60ts2-s6x19, physical_data_entities::pde-mmq60ts2-f3cgj, physical_data_entities::pde-mmq60ts2-hwjpg, physical_data_entities::pde-mmq60ts2-wm4fm, physical_data_entities::pde-mmq60ts2-90eei, physical_data_entities::pde-mmq60ts2-slpyc, physical_data_entities::pde-mmq60ts2-hcoay, physical_data_entities::pde-mmq60ts2-fejnk, physical_data_entities::pde-mmq60ts2-fcl9r, physical_data_entities::pde-mmq60ts2-ldsk5, physical_data_entities::pde-mmq60ts2-pz2t3, physical_data_entities::pde-mmq60ts2-doiwf, physical_data_entities::pde-mmq60ts2-95g0m, physical_data_entities::pde-mmq60ts2-7nfu7, ui_screens::ui-mmkz7g4w-3dfdc
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjosr-i897i",
+      "name": "RS UI Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjpdp-apue4",
+      "name": "RS Persistence Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "lde-mmq60ts2-1ipbw",
+      "name": "Role",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-3sufv",
+      "name": "BriefItem",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-8n0nx",
+      "name": "OrgRoleAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-a4un6",
+      "name": "StorageObject",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-i702v",
+      "name": "Video",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-j5prk",
+      "name": "BriefItemDeliverable",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-jnlmp",
+      "name": "CommentMention",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-no393",
+      "name": "ApprovalRequest",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-nyk9m",
+      "name": "VideoVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-q4oac",
+      "name": "Project",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-qvkkw",
+      "name": "BrandAssetVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r55ov",
+      "name": "ProducerAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r94lu",
+      "name": "Organization",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-wsn91",
+      "name": "UserAccount",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xesnn",
+      "name": "ReviewComment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xkrll",
+      "name": "Brief",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xxiaf",
+      "name": "ApprovalEvent",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-y0762",
+      "name": "OrganizationMember",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-zwxx9",
+      "name": "BrandAsset",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "pde-mmq60ts2-778mh",
+      "name": "organization",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-7nfu7",
+      "name": "brand_asset_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "asset_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-90eei",
+      "name": "project",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_producer_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-95g0m",
+      "name": "brand_asset",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "asset_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "tags",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "visibility",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-cgbgt",
+      "name": "role",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-doiwf",
+      "name": "approval_event",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "approval_request_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "actor_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "event_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-f3cgj",
+      "name": "brief",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "submitted_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "priority",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "desired_due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "budget",
+          "type": "NUMERIC(12,2)",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "creative_direction",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "references",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fcl9r",
+      "name": "review_comment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "author_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "parent_comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "time_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolved_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolution_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fejnk",
+      "name": "video_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "upload_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "transcode_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_current",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_approved",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hcoay",
+      "name": "storage_object",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "bucket",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "object_key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "region",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "BIGINT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "content_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "etag",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "sha256",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hwjpg",
+      "name": "brief_item",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "expected_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "primary_aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audience",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-ldsk5",
+      "name": "comment_mention",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "mentioned_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-m459u",
+      "name": "user_account",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "CITEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "first_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "last_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "auth_provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "external_subject_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "last_login_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "default_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-pz2t3",
+      "name": "approval_request",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "producer_assignment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "approver_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "requested_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "decision_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "decided_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-s6x19",
+      "name": "producer_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "producer_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "client_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "assigned_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-slpyc",
+      "name": "video",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_deliverable_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "latest_approved_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-twp3t",
+      "name": "org_role_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "role_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-wm4fm",
+      "name": "brief_item_deliverable",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "max_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_numerator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_denominator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audio_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "captions_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "localization_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locales",
+          "type": "TEXT[]",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "deliverable_notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "extras",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_locked",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locked_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "locked_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-zx72q",
+      "name": "organization_member",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "invited_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "joined_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "svc-mlxwlakm-ukz3q",
+      "name": "Rivvy Portal UI",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld7t-6k24g",
+      "name": "Rivvy Portal DB",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "ui-mmkz7g4w-3dfdc",
+      "name": "Login",
+      "type": "uiScreens",
+      "category": "ui",
+      "route": "/login"
+    }
+  ]
+}
+
+## YOUR ROLE
+You are conducting a structured refinement dialog to fully understand the user's requirements. Your goal is to ensure complete clarity and unambiguous intent before any implementation work starts.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown code blocks, no prose outside the JSON structure.
+Your entire response must be a single valid JSON object matching this schema:
+
+{
+  "schemaVersion": "1.1",
+  "message": "Your conversational response to the user (this appears in the chat bubble)",
+  "featureUnderstanding": "Current human-readable definition of the feature based on conversation",
+  "scope": {
+    "in": ["Items explicitly included in scope"],
+    "out": ["Items explicitly excluded from scope"]
+  },
+  "assumptions": ["Assumptions you are making that could be confirmed/refuted"],
+  "acceptanceCriteria": ["Testable success conditions (populate as they become clear)"],
+  "openQuestions": ["Questions that need user clarification before implementation"],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+## FIELD GUIDELINES
+- "message": Chat bubble text (1-2 sentences max, single paragraph). Keep brief. Do NOT include bullet lists, numbered lists, section headers, or duplicated content from openQuestions/scope/acceptanceCriteria. If questions exist, say "I have N questions" without repeating them.
+- "featureUnderstanding": Evolving definition of what the feature does. Update as clarity improves.
+- "scope.in": What IS included. Be specific.
+- "scope.out": What is NOT included. Be explicit about boundaries.
+- "assumptions": Things you're assuming that could be wrong. Make them falsifiable.
+- "acceptanceCriteria": Add testable criteria as they become clear from conversation.
+- "openQuestions": Questions blocking progress. Remove as user answers them.
+- "plannerReadyForSpec": Set to true ONLY when openQuestions is empty AND you have sufficient clarity.
+- "implementationPlan": MUST be null during this phase. Plans are generated in implementation_planning phase.
+
+## RULES - DO NOT VIOLATE
+1. Respond with VALID JSON ONLY - no markdown, no prose outside JSON
+2. Include ALL fields, even if arrays are empty
+3. DO NOT generate code, specs, or implementation details
+4. DO NOT call MCP tools or external tools
+5. DO NOT make up information about architecture not in resolved context
+6. Keep "message" concise but helpful
+7. Ground all content in the provided work item and architecture context
+8. Reference entities by name from resolved context, not by raw IDs
+9. "implementationPlan" must always be null in this phase
+10. Keep "message" under 300 characters. Do not use bullets, numbered lists, or repeat structured content.
+
+## PROGRESSION
+1. Early turns: Ask 3-7 focused clarifying questions, build understanding
+2. Middle turns: Refine scope boundaries, confirm assumptions, add acceptance criteria
+3. Later turns: All questions answered, comprehensive definition ready
+4. When ready: Set plannerReadyForSpec=true, empty openQuestions array
+
+--- [USER] (phase: refine) @ 2026-03-16T15:14:58.258Z ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- [ASSISTANT] (phase: refine) @ 2026-03-16T15:16:05.200Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Here’s my current understanding; I have 6 questions to confirm details before we lock scope.",
+  "featureUnderstanding": "Users access the Login screen (/login) in Rivvy Portal UI to enter email, password, and optionally Remember me. Rivvy Portal Services (via Portal API) authenticates the user. On success, active users are routed by role: Admin to /admin; Client or Producer to /dashboard. If Remember me is checked, the session persists across browser restarts for 180 days unless the user signs out; otherwise the session follows the standard non-remember timeout. Role determination will use roles available to the signed-in user.",
+  "scope": {
+    "in": [
+      "Login screen in Rivvy Portal UI with email, password, and Remember me",
+      "Authenticate via Rivvy Portal Services through Portal API",
+      "Route to /admin for Admin users; route to /dashboard for Client or Producer users",
+      "Persist session for 180 days when Remember me is selected",
+      "Use configured standard timeout when Remember me is not selected"
+    ],
+    "out": [
+      "User registration, password reset, and account recovery",
+      "SSO or MFA flows",
+      "Account lockout, rate limiting, and CAPTCHA",
+      "Role management or assignment changes",
+      "Admin or dashboard feature implementation beyond routing",
+      "Organization switching UX",
+      "Deep-link return-to-original-page behavior unless specified"
+    ]
+    },
+  "assumptions": [
+    "An 'active account' is defined as UserAccount.status = 'ACTIVE'.",
+    "Authentication is handled by Rivvy Portal Services, which validates email/password and issues a session recognized by Rivvy Portal UI.",
+    "Roles Admin, Client, and Producer are determined from Role and OrgRoleAssignment records.",
+    "If a user has both Admin and non-admin roles, Admin routing (/admin) takes precedence.",
+    "Remember me persistence is an absolute 180-day lifetime, not sliding by activity.",
+    "Non-remember-me timeout value is already configured at the platform level and will be applied as-is."
+  ],
+  "acceptanceCriteria": [
+    "Given an active account with valid email and password, when I submit the form on /login, then I am signed in and routed to /admin if my role is Admin, or to /dashboard if my role is Client or Producer.",
+    "Given I checked Remember me, when I sign in successfully, then my authenticated session persists across browser restarts for 180 days unless I sign out.",
+    "Given I did not check Remember me, when I sign in successfully, then my session expires according to the configured standard non-remember timeout.",
+    "Given I am not an Admin but have Client or Producer access, when I sign in, then I land on /dashboard.",
+    "Given my account is not active, when I submit valid-looking credentials, then I am not signed in and I receive an appropriate error response."
+  ],
+  "openQuestions": [
+    "Where are credentials validated—local password store in Rivvy Portal Services or an external IdP (e.g., Auth0/Cognito)? If external, do we use a hosted login or resource-owner password flow?",
+    "How exactly is 'Admin' determined—global role, per-organization role, or separate flag? If multiple roles exist, what is the exact precedence and does default_org_id affect routing?",
+    "Is the definition of 'active account' solely UserAccount.status = 'ACTIVE', or must email verification or organization membership also be present?",
+    "Is the 180-day Remember me an absolute expiry or sliding with activity? Should sign-out immediately invalidate any persistent tokens across devices?",
+    "What is the specific non-remember session timeout duration, and is it absolute or idle-based?",
+    "After successful sign-in from a protected deep link, should we return users to the originally requested URL instead of the role-based landing route?"
+  ],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+--- [SYSTEM] (phase: refine) @ 2026-03-16T15:44:35.984Z ---
+You are an Implementation Planner assistant that helps clarify and refine work item requirements before implementation begins.
+
+## CONTEXT
+Work Item: Sign in with valid credentials
+Type: STORY
+Description: As a user, I can sign in with my email and password and be routed by role.
+
+Acceptance Criteria:
+- Given an active account with valid email and password, when I submit the form, then I am signed in and routed to /admin if Admin, or /dashboard if Client/Producer.
+- Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts for 180 days unless I sign out.
+- Given I did not check Remember me, when I sign in successfully, then my session follows the configured standard (non-remember-me) timeout.
+
+## Architecture Meta-Model Reference
+# Architecture Meta-Model Reference
+
+This section describes the entity types and relationship types in the Architecture Meta-Model. Use this reference to understand the structure of the architecture model data that follows.
+
+> **Note:** `ui_contracts` is excluded from the model data below. It is a deprecated duplicate of `interfaces` and is pending removal.
+
+## Entity Types
+
+### Application Architecture
+
+- **`applications`** -- Top-level deployable systems
+- **`app_components`** -- Human-defined grouping of service types/tiers/layers within an application on a technical basis (e.g. "Web Tier", "Persistence Tier"), so that certain important things can be stated about this grouping e.g. "our company uses React/TS for all frontends" + if a project has 3 services whose parent app_component is "UI Tier", then those 3 deployed services should be React/TS according to company technical standards.
+- **`services`** -- Runtime components within an application
+- **`interfaces`** -- API boundaries exposed by services
+- **`endpoints`** -- Individual operations on an interface
+- **`application_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every application_point row maps to exactly one concrete entity (application, app_component, service, or interface). This mechanism allows relationships like `data_movements` to flexibly reference any level of the application architecture as source/target. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Code-Level Entities
+
+- **`classes`** -- Code-level entities. E.g. if Java, it's a Java class. Used in UML "Class diagrams".
+- **`methods`** -- Code-level methods on classes. Used in "Class diagrams" and referenced in other diagrams e.g. a sequence diagram might show an internal calculation `calcMyNumbers(...)`.
+
+### Data Entities
+
+- **`logical_data_entities`** -- Conceptual data objects (DTOs), often representing the actual shape of data transferring between applications in APIs.
+- **`logical_data_attributes`** -- Fields on logical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`physical_data_entities`** -- Persisted storage structures (database tables, collections, physical files).
+- **`physical_data_attributes`** -- Columns on physical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`data_entity_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every data_entity_point maps to exactly one logical or physical data entity. Allows relationships to flexibly reference either type. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Business Domain
+
+- **`business_users`** -- Actors/roles who use the system.
+- **`business_processes`** -- High-level business workflows.
+- **`process_activities`** -- Steps within a business process.
+- **`business_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every business_point maps to either a `business_process` or an `activity`. Allows relationships to reference either a very high-level business process or a medium-to-high level business activity. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`app_business_points`** -- **Super-polymorphic wrapper**. Allows the flexible choice of either an `application_point` or a `business_point` in a relationship. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`interactions`** -- A flexible definition allowing you to define any kind of interaction that a user may have with `application_points` or `business_points` (hence the use of `app_business_points`). Architecturally loose by design.
+
+### State Machine
+
+- **`events`** -- Events in a state machine model.
+- **`states`** -- States in a state machine model.
+- **`state_transitions`** -- Transitions between states in a state machine.
+
+### Activity/Workflow
+
+- **`activities`** -- Steps in an activity/workflow diagram.
+- **`activity_flows`** -- Connections between activities in a workflow.
+- **`activity_partitions`** -- Swimlanes/groupings in activity diagrams.
+
+### UI Architecture
+
+- **`ui_screens`** -- Frontend pages/views.
+- **`ui_components`** -- Component/element within a screen (not a UI widget). What would be defined in multiple frontend frameworks in code in `src/components`. Components build on top of each other e.g. basic components are used in the definition of parent, more complex components.
+- **`ui_actions`** -- User-triggered or system-triggered actions in UI.
+- **`ui_characteristics`** -- Business features / UX characteristics linked to services that are "UI tier" i.e. frontend UIs.
+
+### Business Logic & Packaging
+
+- **`business_logics`** -- Business rules/domain logic owned by a service.
+- **`package_sets`** -- A set of "packages" that allows someone to state their full src directory/package structure.
+- **`packages`** -- Code packaging (think Java Package, albeit this word is different in other languages e.g. Python Module).
+- **`package_set_default_rules`** -- Auto-resolution rules for package set selection.
+
+## Relationship Types
+
+- **`business_user_business_points`** -- Links business users to business points (polymorphic: business processes or activities).
+- **`application_point_business_points`** -- Links application points to business points.
+- **`logical_data_entity_relationships`** -- Links between logical data entities (e.g. FK-style references, associations).
+- **`logical_data_entity_physical_data_entities`** -- Maps logical entities to physical entities (logical<->physical mapping).
+- **`logical_data_attribute_physical_data_attributes`** -- Maps logical attributes to physical attributes.
+- **`data_movements`** -- Data flowing between application points, optionally referencing a data entity point or interface.
+- **`interface_logical_entities`** -- Links interfaces to the logical entities they expose.
+- **`ui_workflow_transitions`** -- Navigation/flow between UI screens.
+- **`application_point_business_logics`** -- Links application points to business logic rules.
+
+## Important Notes on Polymorphic Wrappers
+
+The following entity types are **polymorphic wrappers** that are **automatically managed by the backend**. The LLM must **NEVER** create, update, or delete these entities directly. They are created and maintained automatically when their corresponding concrete entities are saved:
+
+1. **`application_points`** -- Auto-created for applications, app_components, services, and interfaces
+2. **`data_entity_points`** -- Auto-created for logical_data_entities and physical_data_entities
+3. **`business_points`** -- Auto-created for business_processes and activities
+4. **`app_business_points`** -- Auto-created to bridge application_points and business_points
+
+
+Selected Architecture Context:
+- Entity IDs: business_users::bu-mmkz7g4w-fh2m5, business_users::bu-mmkz7g4w-4kozk, business_users::bu-mmkz7g4w-1izl7, services::svc-mlxwlakm-ukz3q, services::svc-mlxwld2d-zzncf, services::svc-mlxwld7t-6k24g, logical_data_entities::lde-mmq60ts2-r94lu, logical_data_entities::lde-mmq60ts2-wsn91, logical_data_entities::lde-mmq60ts2-y0762, logical_data_entities::lde-mmq60ts2-1ipbw, logical_data_entities::lde-mmq60ts2-8n0nx, logical_data_entities::lde-mmq60ts2-r55ov, logical_data_entities::lde-mmq60ts2-xkrll, logical_data_entities::lde-mmq60ts2-3sufv, logical_data_entities::lde-mmq60ts2-j5prk, logical_data_entities::lde-mmq60ts2-q4oac, logical_data_entities::lde-mmq60ts2-i702v, logical_data_entities::lde-mmq60ts2-a4un6, logical_data_entities::lde-mmq60ts2-nyk9m, logical_data_entities::lde-mmq60ts2-xesnn, logical_data_entities::lde-mmq60ts2-jnlmp, logical_data_entities::lde-mmq60ts2-no393, logical_data_entities::lde-mmq60ts2-xxiaf, logical_data_entities::lde-mmq60ts2-zwxx9, logical_data_entities::lde-mmq60ts2-qvkkw, physical_data_entities::pde-mmq60ts2-778mh, physical_data_entities::pde-mmq60ts2-m459u, physical_data_entities::pde-mmq60ts2-zx72q, physical_data_entities::pde-mmq60ts2-cgbgt, physical_data_entities::pde-mmq60ts2-twp3t, physical_data_entities::pde-mmq60ts2-s6x19, physical_data_entities::pde-mmq60ts2-f3cgj, physical_data_entities::pde-mmq60ts2-hwjpg, physical_data_entities::pde-mmq60ts2-wm4fm, physical_data_entities::pde-mmq60ts2-90eei, physical_data_entities::pde-mmq60ts2-slpyc, physical_data_entities::pde-mmq60ts2-hcoay, physical_data_entities::pde-mmq60ts2-fejnk, physical_data_entities::pde-mmq60ts2-fcl9r, physical_data_entities::pde-mmq60ts2-ldsk5, physical_data_entities::pde-mmq60ts2-pz2t3, physical_data_entities::pde-mmq60ts2-doiwf, physical_data_entities::pde-mmq60ts2-95g0m, physical_data_entities::pde-mmq60ts2-7nfu7, ui_screens::ui-mmkz7g4w-3dfdc
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjosr-i897i",
+      "name": "RS UI Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjpdp-apue4",
+      "name": "RS Persistence Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "lde-mmq60ts2-1ipbw",
+      "name": "Role",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-3sufv",
+      "name": "BriefItem",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-8n0nx",
+      "name": "OrgRoleAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-a4un6",
+      "name": "StorageObject",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-i702v",
+      "name": "Video",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-j5prk",
+      "name": "BriefItemDeliverable",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-jnlmp",
+      "name": "CommentMention",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-no393",
+      "name": "ApprovalRequest",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-nyk9m",
+      "name": "VideoVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-q4oac",
+      "name": "Project",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-qvkkw",
+      "name": "BrandAssetVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r55ov",
+      "name": "ProducerAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r94lu",
+      "name": "Organization",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-wsn91",
+      "name": "UserAccount",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xesnn",
+      "name": "ReviewComment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xkrll",
+      "name": "Brief",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xxiaf",
+      "name": "ApprovalEvent",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-y0762",
+      "name": "OrganizationMember",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-zwxx9",
+      "name": "BrandAsset",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "pde-mmq60ts2-778mh",
+      "name": "organization",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-7nfu7",
+      "name": "brand_asset_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "asset_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-90eei",
+      "name": "project",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_producer_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-95g0m",
+      "name": "brand_asset",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "asset_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "tags",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "visibility",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-cgbgt",
+      "name": "role",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-doiwf",
+      "name": "approval_event",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "approval_request_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "actor_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "event_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-f3cgj",
+      "name": "brief",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "submitted_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "priority",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "desired_due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "budget",
+          "type": "NUMERIC(12,2)",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "creative_direction",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "references",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fcl9r",
+      "name": "review_comment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "author_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "parent_comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "time_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolved_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolution_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fejnk",
+      "name": "video_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "upload_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "transcode_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_current",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_approved",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hcoay",
+      "name": "storage_object",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "bucket",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "object_key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "region",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "BIGINT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "content_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "etag",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "sha256",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hwjpg",
+      "name": "brief_item",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "expected_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "primary_aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audience",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-ldsk5",
+      "name": "comment_mention",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "mentioned_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-m459u",
+      "name": "user_account",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "CITEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "first_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "last_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "auth_provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "external_subject_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "last_login_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "default_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-pz2t3",
+      "name": "approval_request",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "producer_assignment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "approver_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "requested_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "decision_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "decided_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-s6x19",
+      "name": "producer_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "producer_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "client_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "assigned_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-slpyc",
+      "name": "video",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_deliverable_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "latest_approved_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-twp3t",
+      "name": "org_role_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "role_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-wm4fm",
+      "name": "brief_item_deliverable",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "max_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_numerator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_denominator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audio_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "captions_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "localization_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locales",
+          "type": "TEXT[]",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "deliverable_notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "extras",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_locked",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locked_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "locked_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-zx72q",
+      "name": "organization_member",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "invited_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "joined_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "svc-mlxwlakm-ukz3q",
+      "name": "Rivvy Portal UI",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld7t-6k24g",
+      "name": "Rivvy Portal DB",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "ui-mmkz7g4w-3dfdc",
+      "name": "Login",
+      "type": "uiScreens",
+      "category": "ui",
+      "route": "/login"
+    }
+  ]
+}
+
+## YOUR ROLE
+You are conducting a structured refinement dialog to fully understand the user's requirements. Your goal is to ensure complete clarity and unambiguous intent before any implementation work starts.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown code blocks, no prose outside the JSON structure.
+Your entire response must be a single valid JSON object matching this schema:
+
+{
+  "schemaVersion": "1.1",
+  "message": "Your conversational response to the user (this appears in the chat bubble)",
+  "featureUnderstanding": "Current human-readable definition of the feature based on conversation",
+  "scope": {
+    "in": ["Items explicitly included in scope"],
+    "out": ["Items explicitly excluded from scope"]
+  },
+  "assumptions": ["Assumptions you are making that could be confirmed/refuted"],
+  "acceptanceCriteria": ["Testable success conditions (populate as they become clear)"],
+  "openQuestions": ["Questions that need user clarification before implementation"],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+## FIELD GUIDELINES
+- "message": Chat bubble text (1-2 sentences max, single paragraph). Keep brief. Do NOT include bullet lists, numbered lists, section headers, or duplicated content from openQuestions/scope/acceptanceCriteria. If questions exist, say "I have N questions" without repeating them.
+- "featureUnderstanding": Evolving definition of what the feature does. Update as clarity improves.
+- "scope.in": What IS included. Be specific.
+- "scope.out": What is NOT included. Be explicit about boundaries.
+- "assumptions": Things you're assuming that could be wrong. Make them falsifiable.
+- "acceptanceCriteria": Add testable criteria as they become clear from conversation.
+- "openQuestions": Questions blocking progress. Remove as user answers them.
+- "plannerReadyForSpec": Set to true ONLY when openQuestions is empty AND you have sufficient clarity.
+- "implementationPlan": MUST be null during this phase. Plans are generated in implementation_planning phase.
+
+## RULES - DO NOT VIOLATE
+1. Respond with VALID JSON ONLY - no markdown, no prose outside JSON
+2. Include ALL fields, even if arrays are empty
+3. DO NOT generate code, specs, or implementation details
+4. DO NOT call MCP tools or external tools
+5. DO NOT make up information about architecture not in resolved context
+6. Keep "message" concise but helpful
+7. Ground all content in the provided work item and architecture context
+8. Reference entities by name from resolved context, not by raw IDs
+9. "implementationPlan" must always be null in this phase
+10. Keep "message" under 300 characters. Do not use bullets, numbered lists, or repeat structured content.
+
+## PROGRESSION
+1. Early turns: Ask 3-7 focused clarifying questions, build understanding
+2. Middle turns: Refine scope boundaries, confirm assumptions, add acceptance criteria
+3. Later turns: All questions answered, comprehensive definition ready
+4. When ready: Set plannerReadyForSpec=true, empty openQuestions array
+
+## FOLLOW-UP GUIDANCE
+The user has already answered your initial set of questions. At this point, only ask further questions if you genuinely cannot proceed without the answer. If something is slightly ambiguous, use your best judgement and document it as an assumption in the "assumptions" array. Do not ask obvious or low-value questions. Aim to set plannerReadyForSpec=true unless there is a critical blocker that truly prevents you from proceeding.
+
+--- [USER] (phase: refine) @ 2026-03-16T15:44:35.985Z ---
+Answers to your questions:
+
+Q: Where are credentials validated—local password store in Rivvy Portal Services or an external IdP (e.g., Auth0/Cognito)? If external, do we use a hosted login or resource-owner password flow?
+A: local password store
+
+Q: How exactly is 'Admin' determined—global role, per-organization role, or separate flag? If multiple roles exist, what is the exact precedence and does default_org_id affect routing?
+A: 'Admin' is a global role
+
+Q: Is the definition of 'active account' solely UserAccount.status = 'ACTIVE', or must email verification or organization membership also be present?
+A: just 'ACTIVE'
+
+Q: Is the 180-day Remember me an absolute expiry or sliding with activity? Should sign-out immediately invalidate any persistent tokens across devices?
+A: sliding. Yes
+
+Q: What is the specific non-remember session timeout duration, and is it absolute or idle-based?
+A: you decide
+
+Q: After successful sign-in from a protected deep link, should we return users to the originally requested URL instead of the role-based landing route?
+A: originally requested URL
+
+--- [ASSISTANT] (phase: refine) @ 2026-03-16T15:46:31.535Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Thanks for the clarifications—updated scope and criteria below. I’m ready to proceed to spec.",
+  "featureUnderstanding": "On the Rivvy Portal UI Login screen (/login), users enter email, password, and optional Remember me. Rivvy Portal Services (Portal API) authenticates against a local password store. If the account is ACTIVE and credentials are valid, the user is signed in. Post-auth redirect behavior: if the login was triggered by a protected deep link, return to the originally requested URL; otherwise route by role—global Admin to /admin; Client or Producer to /dashboard. When Remember me is checked, the session is sliding and persists across browser restarts for up to 180 days since last activity (and will be invalidated upon explicit sign-out). Without Remember me, the session uses a 30-minute idle-based timeout.",
+  "scope": {
+    "in": [
+      "Login form in Rivvy Portal UI (/login) with email, password, and Remember me",
+      "Local password authentication via Rivvy Portal Services (Portal API)",
+      "Role-based routing: global Admin -> /admin; Client or Producer -> /dashboard",
+      "Deep-link return: redirect to originally requested protected URL after successful sign-in",
+      "Session behavior: Remember me = sliding 180-day persistence across restarts; No Remember me = 30-minute idle-based timeout"
+    ],
+    "out": [
+      "User registration, password reset, and account recovery",
+      "SSO or MFA flows",
+      "Lockout, rate limiting, and CAPTCHA",
+      "Role management or assignment changes",
+      "Admin or dashboard feature content beyond routing",
+      "Organization switching UX",
+      "Sign-out implementation (must be supported by session model but delivered separately)"
+    ]
+  },
+  "assumptions": [
+    "Active account means UserAccount.status = 'ACTIVE' only.",
+    "Global Admin takes precedence over any other roles for routing.",
+    "Client and Producer roles both route to /dashboard.",
+    "Non-remember session timeout is 30 minutes of inactivity (sliding).",
+    "Remember me is sliding up to 180 days since last activity and is invalidated on explicit sign-out across devices.",
+    "If no valid deep link is present (missing, invalid, or external), fall back to role-based landing."
+  ],
+  "acceptanceCriteria": [
+    "Given an ACTIVE account with valid email and password, when I submit the form on /login, then I am signed in and routed to /admin if I have the global Admin role, otherwise to /dashboard if I am a Client or Producer.",
+    "Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts and remains valid with activity for up to 180 days since my last activity, and otherwise expires.",
+    "Given I did not check Remember me, when I sign in successfully, then my session expires after 30 minutes of inactivity.",
+    "Given I attempted to access a protected URL and was redirected to /login, when I sign in successfully, then I am redirected to the originally requested URL.",
+    "Given my account is not ACTIVE, when I submit valid-looking credentials, then I am not signed in and receive an appropriate error.",
+    "Given my credentials are invalid, when I submit the form, then I am not signed in and receive a generic invalid credentials error."
+  ],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": null
+}
+
+--- [SYSTEM] (phase: implementation_planning) @ 2026-03-16T15:46:31.787Z ---
+You are a Product Owner creating an implementation plan for a shaped feature.
+
+## CONTEXT
+Work Item: Sign in with valid credentials
+Type: STORY
+Description: As a user, I can sign in with my email and password and be routed by role.
+
+Acceptance Criteria:
+- Given an active account with valid email and password, when I submit the form, then I am signed in and routed to /admin if Admin, or /dashboard if Client/Producer.
+- Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts for 180 days unless I sign out.
+- Given I did not check Remember me, when I sign in successfully, then my session follows the configured standard (non-remember-me) timeout.
+
+## Architecture Meta-Model Reference
+# Architecture Meta-Model Reference
+
+This section describes the entity types and relationship types in the Architecture Meta-Model. Use this reference to understand the structure of the architecture model data that follows.
+
+> **Note:** `ui_contracts` is excluded from the model data below. It is a deprecated duplicate of `interfaces` and is pending removal.
+
+## Entity Types
+
+### Application Architecture
+
+- **`applications`** -- Top-level deployable systems
+- **`app_components`** -- Human-defined grouping of service types/tiers/layers within an application on a technical basis (e.g. "Web Tier", "Persistence Tier"), so that certain important things can be stated about this grouping e.g. "our company uses React/TS for all frontends" + if a project has 3 services whose parent app_component is "UI Tier", then those 3 deployed services should be React/TS according to company technical standards.
+- **`services`** -- Runtime components within an application
+- **`interfaces`** -- API boundaries exposed by services
+- **`endpoints`** -- Individual operations on an interface
+- **`application_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every application_point row maps to exactly one concrete entity (application, app_component, service, or interface). This mechanism allows relationships like `data_movements` to flexibly reference any level of the application architecture as source/target. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Code-Level Entities
+
+- **`classes`** -- Code-level entities. E.g. if Java, it's a Java class. Used in UML "Class diagrams".
+- **`methods`** -- Code-level methods on classes. Used in "Class diagrams" and referenced in other diagrams e.g. a sequence diagram might show an internal calculation `calcMyNumbers(...)`.
+
+### Data Entities
+
+- **`logical_data_entities`** -- Conceptual data objects (DTOs), often representing the actual shape of data transferring between applications in APIs.
+- **`logical_data_attributes`** -- Fields on logical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`physical_data_entities`** -- Persisted storage structures (database tables, collections, physical files).
+- **`physical_data_attributes`** -- Columns on physical data entities (name, dataType, isPrimaryKey, isNullable).
+- **`data_entity_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every data_entity_point maps to exactly one logical or physical data entity. Allows relationships to flexibly reference either type. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+
+### Business Domain
+
+- **`business_users`** -- Actors/roles who use the system.
+- **`business_processes`** -- High-level business workflows.
+- **`process_activities`** -- Steps within a business process.
+- **`business_points`** -- **Polymorphic wrapper (1:1 with a concrete entity)**. Every business_point maps to either a `business_process` or an `activity`. Allows relationships to reference either a very high-level business process or a medium-to-high level business activity. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`app_business_points`** -- **Super-polymorphic wrapper**. Allows the flexible choice of either an `application_point` or a `business_point` in a relationship. **AUTO-MANAGED by the backend -- the LLM must NEVER create these directly.**
+- **`interactions`** -- A flexible definition allowing you to define any kind of interaction that a user may have with `application_points` or `business_points` (hence the use of `app_business_points`). Architecturally loose by design.
+
+### State Machine
+
+- **`events`** -- Events in a state machine model.
+- **`states`** -- States in a state machine model.
+- **`state_transitions`** -- Transitions between states in a state machine.
+
+### Activity/Workflow
+
+- **`activities`** -- Steps in an activity/workflow diagram.
+- **`activity_flows`** -- Connections between activities in a workflow.
+- **`activity_partitions`** -- Swimlanes/groupings in activity diagrams.
+
+### UI Architecture
+
+- **`ui_screens`** -- Frontend pages/views.
+- **`ui_components`** -- Component/element within a screen (not a UI widget). What would be defined in multiple frontend frameworks in code in `src/components`. Components build on top of each other e.g. basic components are used in the definition of parent, more complex components.
+- **`ui_actions`** -- User-triggered or system-triggered actions in UI.
+- **`ui_characteristics`** -- Business features / UX characteristics linked to services that are "UI tier" i.e. frontend UIs.
+
+### Business Logic & Packaging
+
+- **`business_logics`** -- Business rules/domain logic owned by a service.
+- **`package_sets`** -- A set of "packages" that allows someone to state their full src directory/package structure.
+- **`packages`** -- Code packaging (think Java Package, albeit this word is different in other languages e.g. Python Module).
+- **`package_set_default_rules`** -- Auto-resolution rules for package set selection.
+
+## Relationship Types
+
+- **`business_user_business_points`** -- Links business users to business points (polymorphic: business processes or activities).
+- **`application_point_business_points`** -- Links application points to business points.
+- **`logical_data_entity_relationships`** -- Links between logical data entities (e.g. FK-style references, associations).
+- **`logical_data_entity_physical_data_entities`** -- Maps logical entities to physical entities (logical<->physical mapping).
+- **`logical_data_attribute_physical_data_attributes`** -- Maps logical attributes to physical attributes.
+- **`data_movements`** -- Data flowing between application points, optionally referencing a data entity point or interface.
+- **`interface_logical_entities`** -- Links interfaces to the logical entities they expose.
+- **`ui_workflow_transitions`** -- Navigation/flow between UI screens.
+- **`application_point_business_logics`** -- Links application points to business logic rules.
+
+## Important Notes on Polymorphic Wrappers
+
+The following entity types are **polymorphic wrappers** that are **automatically managed by the backend**. The LLM must **NEVER** create, update, or delete these entities directly. They are created and maintained automatically when their corresponding concrete entities are saved:
+
+1. **`application_points`** -- Auto-created for applications, app_components, services, and interfaces
+2. **`data_entity_points`** -- Auto-created for logical_data_entities and physical_data_entities
+3. **`business_points`** -- Auto-created for business_processes and activities
+4. **`app_business_points`** -- Auto-created to bridge application_points and business_points
+
+
+Selected Architecture Context:
+- Entity IDs: business_users::bu-mmkz7g4w-fh2m5, business_users::bu-mmkz7g4w-4kozk, business_users::bu-mmkz7g4w-1izl7, services::svc-mlxwlakm-ukz3q, services::svc-mlxwld2d-zzncf, services::svc-mlxwld7t-6k24g, logical_data_entities::lde-mmq60ts2-r94lu, logical_data_entities::lde-mmq60ts2-wsn91, logical_data_entities::lde-mmq60ts2-y0762, logical_data_entities::lde-mmq60ts2-1ipbw, logical_data_entities::lde-mmq60ts2-8n0nx, logical_data_entities::lde-mmq60ts2-r55ov, logical_data_entities::lde-mmq60ts2-xkrll, logical_data_entities::lde-mmq60ts2-3sufv, logical_data_entities::lde-mmq60ts2-j5prk, logical_data_entities::lde-mmq60ts2-q4oac, logical_data_entities::lde-mmq60ts2-i702v, logical_data_entities::lde-mmq60ts2-a4un6, logical_data_entities::lde-mmq60ts2-nyk9m, logical_data_entities::lde-mmq60ts2-xesnn, logical_data_entities::lde-mmq60ts2-jnlmp, logical_data_entities::lde-mmq60ts2-no393, logical_data_entities::lde-mmq60ts2-xxiaf, logical_data_entities::lde-mmq60ts2-zwxx9, logical_data_entities::lde-mmq60ts2-qvkkw, physical_data_entities::pde-mmq60ts2-778mh, physical_data_entities::pde-mmq60ts2-m459u, physical_data_entities::pde-mmq60ts2-zx72q, physical_data_entities::pde-mmq60ts2-cgbgt, physical_data_entities::pde-mmq60ts2-twp3t, physical_data_entities::pde-mmq60ts2-s6x19, physical_data_entities::pde-mmq60ts2-f3cgj, physical_data_entities::pde-mmq60ts2-hwjpg, physical_data_entities::pde-mmq60ts2-wm4fm, physical_data_entities::pde-mmq60ts2-90eei, physical_data_entities::pde-mmq60ts2-slpyc, physical_data_entities::pde-mmq60ts2-hcoay, physical_data_entities::pde-mmq60ts2-fejnk, physical_data_entities::pde-mmq60ts2-fcl9r, physical_data_entities::pde-mmq60ts2-ldsk5, physical_data_entities::pde-mmq60ts2-pz2t3, physical_data_entities::pde-mmq60ts2-doiwf, physical_data_entities::pde-mmq60ts2-95g0m, physical_data_entities::pde-mmq60ts2-7nfu7, ui_screens::ui-mmkz7g4w-3dfdc
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjosr-i897i",
+      "name": "RS UI Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "comp-mlxwjpdp-apue4",
+      "name": "RS Persistence Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "lde-mmq60ts2-1ipbw",
+      "name": "Role",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-3sufv",
+      "name": "BriefItem",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-8n0nx",
+      "name": "OrgRoleAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-a4un6",
+      "name": "StorageObject",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-i702v",
+      "name": "Video",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-j5prk",
+      "name": "BriefItemDeliverable",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-jnlmp",
+      "name": "CommentMention",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-no393",
+      "name": "ApprovalRequest",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-nyk9m",
+      "name": "VideoVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-q4oac",
+      "name": "Project",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-qvkkw",
+      "name": "BrandAssetVersion",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r55ov",
+      "name": "ProducerAssignment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-r94lu",
+      "name": "Organization",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-wsn91",
+      "name": "UserAccount",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xesnn",
+      "name": "ReviewComment",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xkrll",
+      "name": "Brief",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-xxiaf",
+      "name": "ApprovalEvent",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-y0762",
+      "name": "OrganizationMember",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "lde-mmq60ts2-zwxx9",
+      "name": "BrandAsset",
+      "type": "logicalDataEntities",
+      "category": "data"
+    },
+    {
+      "id": "pde-mmq60ts2-778mh",
+      "name": "organization",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-7nfu7",
+      "name": "brand_asset_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "asset_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-90eei",
+      "name": "project",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_producer_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-95g0m",
+      "name": "brand_asset",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "asset_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "tags",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "visibility",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-cgbgt",
+      "name": "role",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-doiwf",
+      "name": "approval_event",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "approval_request_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "actor_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "event_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-f3cgj",
+      "name": "brief",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "submitted_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "priority",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "desired_due_date",
+          "type": "DATE",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "budget",
+          "type": "NUMERIC(12,2)",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "creative_direction",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "references",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fcl9r",
+      "name": "review_comment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "author_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "parent_comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "time_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "text",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolved_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "resolution_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "is_deleted",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-fejnk",
+      "name": "video_version",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "storage_object_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "upload_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "transcode_status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_current",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_approved",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hcoay",
+      "name": "storage_object",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "bucket",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "object_key",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "version_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "region",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "BIGINT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "content_type",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "etag",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "sha256",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-hwjpg",
+      "name": "brief_item",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "expected_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "primary_aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audience",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-ldsk5",
+      "name": "comment_mention",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "comment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "mentioned_user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-m459u",
+      "name": "user_account",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "CITEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "first_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "last_name",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "auth_provider",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "external_subject_id",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "last_login_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "default_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-pz2t3",
+      "name": "approval_request",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "video_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "producer_assignment_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "approver_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "requested_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "decision_note",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "decided_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-s6x19",
+      "name": "producer_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "producer_member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "client_org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "assigned_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "assigned_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-slpyc",
+      "name": "video",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "project_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_deliverable_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "latest_approved_version_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-twp3t",
+      "name": "org_role_assignment",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "member_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "role_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-wm4fm",
+      "name": "brief_item_deliverable",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "brief_item_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "max_duration_ms",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_width",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "target_height",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_numerator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "frame_rate_denominator",
+          "type": "INT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "audio_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "captions_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "localization_required",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locales",
+          "type": "TEXT[]",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "deliverable_notes",
+          "type": "TEXT",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "extras",
+          "type": "JSONB",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "order_index",
+          "type": "INT",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_locked",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "locked_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "locked_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "id": "pde-mmq60ts2-zx72q",
+      "name": "organization_member",
+      "type": "physicalDataEntities",
+      "category": "data",
+      "database": "rivvy_portal",
+      "physicalType": "Table",
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "pk": true,
+          "nullable": false
+        },
+        {
+          "name": "org_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "invited_by",
+          "type": "UUID",
+          "pk": false,
+          "nullable": true
+        },
+        {
+          "name": "joined_at",
+          "type": "TIMESTAMPTZ",
+          "pk": false,
+          "nullable": false
+        },
+        {
+          "name": "is_primary",
+          "type": "BOOLEAN",
+          "pk": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "id": "svc-mlxwlakm-ukz3q",
+      "name": "Rivvy Portal UI",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "svc-mlxwld7t-6k24g",
+      "name": "Rivvy Portal DB",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    },
+    {
+      "id": "ui-mmkz7g4w-3dfdc",
+      "name": "Login",
+      "type": "uiScreens",
+      "category": "ui",
+      "route": "/login"
+    }
+  ]
+}
+
+## SHAPED FEATURE (from previous conversation)
+Feature Understanding: As a user, I can sign in with my email and password and be routed by role.
+
+Acceptance Criteria:
+- Given an active account with valid email and password, when I submit the form, then I am signed in and routed to /admin if Admin, or /dashboard if Client/Producer.
+- Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts for 180 days unless I sign out.
+- Given I did not check Remember me, when I sign in successfully, then my session follows the configured standard (non-remember-me) timeout.
+Scope In: As described in work item
+Scope Out: None specified
+Assumptions: None specified
+Acceptance Criteria: Feature works as described
+
+## YOUR TASK
+Create an implementation plan for this feature. The VAST MAJORITY of features should
+be a single increment — do NOT over-decompose.
+
+## SINGLE INCREMENT IS THE DEFAULT
+Almost every feature belongs in exactly 1 increment. One increment means one pass
+through the Software Architect. This is correct for:
+- Creating a new service, API, or endpoint (even with multiple files)
+- Adding a new UI screen or component with backend wiring
+- CRUD features spanning frontend, backend, and database
+- Refactoring or migrating existing code
+- Adding configuration, tooling, or infrastructure
+- Bug fixes of any complexity
+- Features touching up to ~15 files
+
+Use 1 increment unless the feature is genuinely enormous (see below).
+
+## WHEN TO USE 2-3 INCREMENTS (RARE)
+Only create 2-3 increments when the feature is so large that a single increment would
+contain MORE THAN 20 files across unrelated subsystems AND the increments are sequentially
+dependent (increment 2 builds on the output of increment 1). Even then, prefer 2 over 3.
+
+Each increment's "intent" must be detailed enough for a Software Architect to
+implement without further clarification.
+
+## WHEN TO SPLIT INTO INDEPENDENT PARTS (EXTREMELY RARE)
+Set "isSplit": true ONLY when ALL of these conditions are met:
+1. The feature would need 5+ increments AND
+2. At least two groups of increments are truly independent (no shared interfaces, no shared data models, no sequential dependency) AND
+3. Each group is independently large enough to be its own feature (not just a few files)
+
+In practice, almost no feature should be split. If in doubt, use 1 increment.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown, no prose outside the JSON structure.
+
+### Standard Plan (most features)
+
+```json
+{
+  "schemaVersion": "1.1",
+  "message": "Here is the plan for Sign in with valid credentials.",
+  "featureUnderstanding": "The full feature definition",
+  "scope": {
+    "in": ["Scope items"],
+    "out": ["Out of scope items"]
+  },
+  "assumptions": ["Assumptions"],
+  "acceptanceCriteria": ["All acceptance criteria"],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Sign in with valid credentials",
+    "increments": [
+      {
+        "id": "INC-1",
+        "partIndex": 1,
+        "title": "Increment title",
+        "intent": "Detailed specification for the Software Architect...",
+        "dependencies": []
+      }
+    ]
+  }
+}
+```
+
+### Split Plan (extremely rare — set "isSplit": true)
+Same structure, but with "isSplit": true when the feature meets ALL splitting criteria above.
+
+```json
+{
+  "schemaVersion": "1.1",
+  "message": "This feature should be split into independent parts.",
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Sign in with valid credentials",
+    "isSplit": true,
+    "increments": [
+      { "id": "INC-1", "partIndex": 1, "title": "Part title", "intent": "Detailed intent...", "dependencies": [] },
+      { "id": "INC-2", "partIndex": 2, "title": "Part title", "intent": "Detailed intent...", "dependencies": ["Part 1: ..."] }
+    ]
+  }
+}
+```
+
+## RULES
+1. ALWAYS include ALL fields, even if arrays are empty
+2. Default to 1 increment. Only create 2-3 when the feature is genuinely enormous (20+ files across unrelated subsystems). NEVER create more than 3 increments.
+3. Each increment's "intent" must be comprehensive enough for a Software Architect to implement
+4. All increment IDs should be sequential (INC-1, INC-2, etc.)
+5. "partIndex" values MUST start at 1 and increment sequentially
+6. "implementationPlan" must NOT be null in this phase
+7. "plannerReadyForSpec" should be true
+8. "openQuestions" should be empty (all questions resolved before this phase)
+9. "dependencies" is optional; when present it must be an array of strings referencing earlier parts
+
+## RESPONSE STYLE
+- Be concise in the "message" field
+- Be detailed in "intent" for each increment
+- Use bullet points within intent fields where helpful
+- Ground all content in the shaped feature and architecture context
+
+--- [USER] (phase: implementation_planning) @ 2026-03-16T15:46:31.788Z ---
+Generate implementation plan
+
+--- [ASSISTANT] (phase: implementation_planning) @ 2026-03-16T15:47:50.882Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Here is the plan for Sign in with valid credentials.",
+  "featureUnderstanding": "On the Rivvy Portal UI Login screen (/login), users enter email, password, and optional Remember me. Rivvy Portal Services (Portal API) authenticates against a local password store. If the account is ACTIVE and credentials are valid, the user is signed in. Post-auth redirect behavior: if login was triggered by a protected deep link, return to the originally requested URL; otherwise route by role—global Admin to /admin; Client or Producer to /dashboard. When Remember me is checked, the session is sliding and persists across browser restarts for up to 180 days since last activity (and is invalidated upon explicit sign-out). Without Remember me, the session uses a 30-minute idle-based timeout.",
+  "scope": {
+    "in": [
+      "Login form in Rivvy Portal UI (/login) with email, password, and Remember me",
+      "Local password authentication via Rivvy Portal Services (Portal API)",
+      "Role-based routing: global Admin -> /admin; Client or Producer -> /dashboard",
+      "Deep-link return: redirect to originally requested protected URL after successful sign-in",
+      "Session behavior: Remember me = sliding 180-day persistence across restarts; No Remember me = 30-minute idle-based timeout",
+      "Secure session cookie issuance and server-side session store"
+    ],
+    "out": [
+      "User registration, password reset, and account recovery",
+      "SSO or MFA flows",
+      "Account lockout, rate limiting, and CAPTCHA",
+      "Role management or assignment changes",
+      "Admin or dashboard feature content beyond routing",
+      "Organization switching UX",
+      "Sign-out UI/API (session model will support revocation but delivery is separate)"
+    ]
+  },
+  "assumptions": [
+    "Active account means UserAccount.status = 'ACTIVE' only.",
+    "Global Admin takes precedence over any other roles for routing.",
+    "Client and Producer roles both route to /dashboard.",
+    "Non-remember session timeout is 30 minutes of inactivity (sliding).",
+    "Remember me is sliding up to 180 days since last activity and is invalidated on explicit sign-out across devices.",
+    "If no valid deep link is present (missing, invalid, or external), fall back to role-based landing.",
+    "Local password store and hashing (e.g., bcrypt) are already in place for UserAccount."
+  },
+  "acceptanceCriteria": [
+    "Given an ACTIVE account with valid email and password, when I submit the form on /login, then I am signed in and routed to /admin if I have the global Admin role, otherwise to /dashboard if I am a Client or Producer.",
+    "Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts and remains valid with activity for up to 180 days since my last activity, and otherwise expires.",
+    "Given I did not check Remember me, when I sign in successfully, then my session expires after 30 minutes of inactivity.",
+    "Given I attempted to access a protected URL and was redirected to /login, when I sign in successfully, then I am redirected to the originally requested URL.",
+    "Given my account is not ACTIVE, when I submit valid-looking credentials, then I am not signed in and receive an appropriate error.",
+    "Given my credentials are invalid, when I submit the form, then I am not signed in and receive a generic invalid credentials error."
+  ],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Sign in with valid credentials",
+    "increments": [
+      {
+        "id": "INC-1",
+        "partIndex": 1,
+        "title": "Implement email/password sign-in with role-based/deep-link routing and remember-me sessions",
+        "intent": "- Architecture anchors:\n  - UI Screen: Login (/login) — ui_screens::ui-mmkz7g4w-3dfdc under Rivvy Portal UI (services::svc-mlxwlakm-ukz3q)\n  - Backend: Rivvy Portal Services (services::svc-mlxwld2d-zzncf) exposing Portal API (interfaces::ifc-mm2fbrdg-s9zlg)\n  - Data: user_account (physical: pde-mmq60ts2-m459u), role (pde-mmq60ts2-cgbgt), org_role_assignment (pde-mmq60ts2-twp3t), organization_member (pde-mmq60ts2-zx72q)\n\n- Backend (Portal API) — Authentication endpoint and session management:\n  1) Add POST /auth/login\n     - Request: { email: string, password: string, rememberMe: boolean, returnTo?: string }\n     - Response (200): { success: true, redirectTo: string }\n     - Response (400/401): { success: false, error: 'INVALID_CREDENTIALS' | 'ACCOUNT_INACTIVE' }\n     - Behavior:\n       - Normalize email (trim, lowercase), validate shapes.\n       - Lookup UserAccount by email; verify status === 'ACTIVE'. If not, return ACCOUNT_INACTIVE.\n       - Verify password using configured local hash (e.g., bcrypt). On failure, return INVALID_CREDENTIALS.\n       - Determine redirect target:\n         - If returnTo provided: allow only same-origin relative paths beginning with '/'; reject or sanitize anything else.\n         - Else compute by role: if user is global Admin => '/admin'; else '/dashboard'.\n       - Create session in server-side store with sliding expiration:\n         - Fields: sessionId (opaque, 128-bit+), userId, rememberMe flag, createdAt, lastActivityAt, idleTimeoutMs (rememberMe ? 180 days : 30 minutes), absoluteMaxAgeMs (rememberMe ? 180 days from last activity sliding window, no absolute cap beyond inactivity), userAgent, ip, revoked=false.\n         - Persist in Redis or DB-backed session table; index by sessionId and userId for future revocation.\n       - Set HttpOnly, Secure, SameSite=Lax cookie e.g., 'rp_sess' with sessionId.\n         - Cookie attributes:\n           - rememberMe=true: maxAge=180 days; survives restarts.\n           - rememberMe=false: session cookie (no Max-Age) to naturally clear on browser close; server enforces 30-min idle.\n         - Path='/', domain as configured; Secure=true in non-local, SameSite=Lax.\n       - Update user_account.last_login_at = now().\n\n  2) Add middleware/utilities\n     - authSessionMiddleware: reads 'rp_sess' cookie, loads session, enforces idle timeout by comparing now - lastActivityAt <= idleTimeoutMs.\n       - On valid session: refresh lastActivityAt (sliding) and persist; optionally rotate sessionId periodically to mitigate fixation.\n       - On expired or revoked: clear cookie and respond 401 for API or redirect to /login with returnTo for HTML routes.\n     - roleResolver: helper to compute isGlobalAdmin(userId). Implement using existing global role assignment logic; fallback precedence: if Admin present globally, return true. Otherwise false -> treat as Client/Producer for routing.\n\n  3) Add GET /auth/me (or reuse existing) to hydrate client\n     - Returns minimal user context: { userId, email, roles: string[], isAdmin: boolean }\n     - Requires valid session; uses middleware above.\n\n  4) Security considerations\n     - Brute-force protections are out of scope; still log failed attempts with user/email+IP for observability.\n     - Ensure generic INVALID_CREDENTIALS on bad email/password to avoid enumeration. ACCOUNT_INACTIVE can be shown per acceptance.\n     - CSRF: login is a simple credential POST; sameSite=Lax suffices. If broader CSRF protection is present, include token validation.\n     - Ensure returnTo validation only allows relative internal paths and optionally a safelist of app routes.\n\n  5) Configuration\n     - ENV: SESSION_COOKIE_NAME=rp_sess, SESSION_IDLE_MINUTES=30, REMEMBER_IDLE_DAYS=180, COOKIE_SECURE=true (non-local), COOKIE_DOMAIN, SESSION_STORE=redis|db, SESSION_ROTATE_INTERVAL_MIN=60.\n\n- Frontend (Rivvy Portal UI) — Login screen and navigation:\n  1) Update Login screen (ui-mmkz7g4w-3dfdc)\n     - Form fields: email (email type), password, Remember me (checkbox), submit button.\n     - Handle query param returnTo when user was redirected from a protected route (e.g., /login?returnTo=%2Fprojects%2F123). Preserve and send with POST /auth/login.\n     - On submit: POST to /auth/login with { email, password, rememberMe, returnTo? }.\n     - On success: window.location.assign(response.redirectTo) for full page navigation.\n     - On error: show inline message — 'Invalid email or password' for INVALID_CREDENTIALS; 'Your account is not active' for ACCOUNT_INACTIVE.\n     - Accessibility: labels, aria-live for errors; disable submit while pending; support Enter key.\n\n  2) Route guard for protected pages\n     - If no valid session (401 from /auth/me or middleware on page load), redirect to /login?returnTo=encodeURIComponent(currentPathAndQuery).\n     - If a signed-in user visits /login, automatically redirect them to role-based landing or returnTo if present.\n\n- Routing logic\n  - After login without returnTo: backend computes redirect based on role. Admin -> /admin; otherwise -> /dashboard.\n  - With returnTo: prefer sanitized returnTo over role-based routing.\n\n- Observability\n  - Emit logs/metrics: auth.login.success, auth.login.failure, auth.session.created, auth.session.expired with tags { rememberMe, isAdmin }.\n\n- Testing\n  - Unit (backend):\n    - Password verification paths: invalid creds, inactive user, success.\n    - Session creation: cookie attributes for rememberMe true/false; sliding lastActivityAt refresh; 30-min vs 180-day idle windows enforced.\n    - returnTo sanitization (reject external URLs, allow internal paths).\n    - Role resolution precedence (Admin wins).\n  - Integration/E2E:\n    - Successful login routes Admin to /admin; non-admin to /dashboard.\n    - Deep link: navigate to protected /projects/X -> redirected to /login -> login -> lands back on /projects/X.\n    - Remember me survives browser restart simulation; non-remember does not persist after close and enforces idle expiration.\n    - Inactive account shows appropriate error; invalid creds show generic error.\n\n- Deployment/migration\n  - No schema changes required for this story (assumes password hashes already exist in local auth store).\n  - Ensure session store (Redis/DB) is provisioned and configured.\n\n- Rollback plan\n  - Feature-flag route guard enforcement and new /auth/login endpoint.\n  - If issues arise, disable new login flow and revert to prior mechanism (if any).",
+        "dependencies": []
+      }
+    ]
+  }
+}

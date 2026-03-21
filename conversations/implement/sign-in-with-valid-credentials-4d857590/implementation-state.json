@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "1f086144-9a42-4797-ac36-73abc61d498f",
+  "latestPlannerResponse": {
+    "schemaVersion": "1.1",
+    "message": "Here is the plan for Sign in with valid credentials.",
+    "featureUnderstanding": "On the Rivvy Portal UI Login screen (/login), users enter email, password, and optional Remember me. Rivvy Portal Services (Portal API) authenticates against a local password store. If the account is ACTIVE and credentials are valid, the user is signed in. Post-auth redirect behavior: if login was triggered by a protected deep link, return to the originally requested URL; otherwise route by role—global Admin to /admin; Client or Producer to /dashboard. When Remember me is checked, the session is sliding and persists across browser restarts for up to 180 days since last activity (and is invalidated upon explicit sign-out). Without Remember me, the session uses a 30-minute idle-based timeout.",
+    "scope": {
+      "in": [
+        "Login form in Rivvy Portal UI (/login) with email, password, and Remember me",
+        "Local password authentication via Rivvy Portal Services (Portal API)",
+        "Role-based routing: global Admin -> /admin; Client or Producer -> /dashboard",
+        "Deep-link return: redirect to originally requested protected URL after successful sign-in",
+        "Session behavior: Remember me = sliding 180-day persistence across restarts; No Remember me = 30-minute idle-based timeout",
+        "Secure session cookie issuance and server-side session store"
+      ],
+      "out": [
+        "User registration, password reset, and account recovery",
+        "SSO or MFA flows",
+        "Account lockout, rate limiting, and CAPTCHA",
+        "Role management or assignment changes",
+        "Admin or dashboard feature content beyond routing",
+        "Organization switching UX",
+        "Sign-out UI/API (session model will support revocation but delivery is separate)"
+      ]
+    },
+    "assumptions": [
+      "Active account means UserAccount.status = 'ACTIVE' only.",
+      "Global Admin takes precedence over any other roles for routing.",
+      "Client and Producer roles both route to /dashboard.",
+      "Non-remember session timeout is 30 minutes of inactivity (sliding).",
+      "Remember me is sliding up to 180 days since last activity and is invalidated on explicit sign-out across devices.",
+      "If no valid deep link is present (missing, invalid, or external), fall back to role-based landing.",
+      "Local password store and hashing (e.g., bcrypt) are already in place for UserAccount."
+    ],
+    "acceptanceCriteria": [
+      "Given an ACTIVE account with valid email and password, when I submit the form on /login, then I am signed in and routed to /admin if I have the global Admin role, otherwise to /dashboard if I am a Client or Producer.",
+      "Given I checked Remember me, when I sign in successfully, then my session persists across browser restarts and remains valid with activity for up to 180 days since my last activity, and otherwise expires.",
+      "Given I did not check Remember me, when I sign in successfully, then my session expires after 30 minutes of inactivity.",
+      "Given I attempted to access a protected URL and was redirected to /login, when I sign in successfully, then I am redirected to the originally requested URL.",
+      "Given my account is not ACTIVE, when I submit valid-looking credentials, then I am not signed in and receive an appropriate error.",
+      "Given my credentials are invalid, when I submit the form, then I am not signed in and receive a generic invalid credentials error."
+    ],
+    "openQuestions": [],
+    "plannerReadyForSpec": true,
+    "implementationPlan": {
+      "planTitle": "Implementation Plan for Sign in with valid credentials",
+      "increments": [
+        {
+          "id": "INC-1",
+          "partIndex": 1,
+          "title": "Implement email/password sign-in with role-based/deep-link routing and remember-me sessions",
+          "intent": "Architecture anchors:\\n- UI Screen: Login (/login) — ui_screens::ui-mmkz7g4w-3dfdc under Rivvy Portal UI (services::svc-mlxwlakm-ukz3q)\\n- Backend: Rivvy Portal Services (services::svc-mlxwld2d-zzncf) exposing Portal API (interfaces::ifc-mm2fbrdg-s9zlg)\\n- Data: user_account (pde-mmq60ts2-m459u), role (pde-mmq60ts2-cgbgt), org_role_assignment (pde-mmq60ts2-twp3t), organization_member (pde-mmq60ts2-zx72q)\\n\\nBackend (Portal API) — Authentication endpoint and session management:\\n1) Add POST /auth/login\\n- Request: { email: string, password: string, rememberMe: boolean, returnTo?: string }\\n- Response (200): { success: true, redirectTo: string }\\n- Response (400/401): { success: false, error: 'INVALID_CREDENTIALS' | 'ACCOUNT_INACTIVE' }\\n- Behavior: normalize email (trim, lowercase) and validate; lookup UserAccount by email; require status === 'ACTIVE' else ACCOUNT_INACTIVE; verify password using local hash (e.g., bcrypt) else INVALID_CREDENTIALS; compute redirectTo: prefer sanitized internal returnTo (must start with '/') else role-based (/admin if global Admin else /dashboard); create server-side session with sliding expiration (sessionId, userId, rememberMe, createdAt, lastActivityAt, idleTimeoutMs = rememberMe ? 180 days : 30 minutes, userAgent, ip, revoked=false); set HttpOnly, Secure, SameSite=Lax cookie (name=rp_sess). Cookie attributes: rememberMe=true => Max-Age=180 days; rememberMe=false => session cookie (no Max-Age). Update user_account.last_login_at = now().\\n\\n2) Add middleware/utilities\\n- authSessionMiddleware: reads rp_sess cookie, loads session, enforces idle timeout (now - lastActivityAt <= idleTimeoutMs), refreshes lastActivityAt on use (sliding). On expired or revoked, clear cookie and return 401 (for API) or redirect to /login with returnTo. Optionally rotate sessionId periodically.\\n- roleResolver: helper isGlobalAdmin(userId) using global role assignment; if true => Admin, else treat as Client/Producer.\\n\\n3) Add GET /auth/me to hydrate client\\n- Returns { userId, email, roles: string[], isAdmin: boolean } for a valid session (uses middleware).\\n\\n4) Security considerations\\n- Keep INVALID_CREDENTIALS generic to avoid enumeration; ACCOUNT_INACTIVE allowed per AC.\\n- CSRF: SameSite=Lax on session cookie; if framework CSRF is enabled, include token on POST /auth/login.\\n- Validate/sanitize returnTo to allow only internal relative paths.\\n- Log auth.login.success/failure with minimal PII (email hash), IP, and userAgent.\\n\\n5) Configuration\\n- ENV: SESSION_COOKIE_NAME=rp_sess, SESSION_IDLE_MINUTES=30, REMEMBER_IDLE_DAYS=180, COOKIE_SECURE=true (non-local), COOKIE_DOMAIN, SESSION_STORE=redis|db, SESSION_ROTATE_INTERVAL_MIN=60.\\n\\nFrontend (Rivvy Portal UI) — Login screen and navigation:\\n1) Update Login screen (ui-mmkz7g4w-3dfdc)\\n- Form fields: email (type=email), password, Remember me (checkbox), submit.\\n- Preserve returnTo from /login?returnTo=... and include in POST /auth/login.\\n- On success: window.location.assign(redirectTo).\\n- On error: show inline message ('Invalid email or password' or 'Your account is not active').\\n- Accessibility: labeled fields, aria-live for errors, disable submit while pending, Enter key support.\\n\\n2) Route guard for protected pages\\n- If not authenticated (401 from /auth/me or middleware), redirect to /login?returnTo=encodeURIComponent(currentPathAndQuery).\\n- If an authenticated user hits /login, redirect them to role-based landing or sanitized returnTo if present.\\n\\nRouting logic\\n- Without returnTo: Admin -> /admin; else -> /dashboard. With returnTo: prefer sanitized returnTo.\\n\\nObservability\\n- Emit logs/metrics: auth.login.success, auth.login.failure, auth.session.created, auth.session.expired with tags { rememberMe, isAdmin }.\\n\\nTesting\\n- Backend unit: invalid creds, inactive user, success; session creation and cookie attributes for rememberMe true/false; sliding lastActivityAt refresh; 30-min vs 180-day enforcement; returnTo sanitization; Admin precedence.\\n- Integration/E2E: Admin routes to /admin; non-admin to /dashboard; deep-link roundtrip; remember-me survives restart; non-remember session cookie clears on close and idle expiry enforced; errors displayed for inactive/invalid.\\n\\nDeployment and rollback\\n- No schema changes required (assumes password hashes exist). Ensure session store configured (Redis/DB). Feature-flag route guard and /auth/login; disable flag to rollback.",
+          "dependencies": []
+        }
+      ]
+    }
+  },
+  "answers": {
+    "5ea1f4e4-63e0-4645-b4b1-bb3711d5acf8": "local password store",
+    "8f3a6316-5e88-4e36-85c7-8cda7c7056b9": "'Admin' is a global role",
+    "42a5c1ba-1ba2-4195-99be-58625f6a6038": "just 'ACTIVE'",
+    "a3d9d2bb-ec65-4626-a9b7-3c5fdaf1121d": "sliding. Yes",
+    "35108f55-c5ec-4851-ad36-af568b5bcc30": "you decide",
+    "0bcd298a-3a95-437b-a827-cda533583659": "originally requested URL"
+  },
+  "questionStatuses": {
+    "5ea1f4e4-63e0-4645-b4b1-bb3711d5acf8": "Answered",
+    "8f3a6316-5e88-4e36-85c7-8cda7c7056b9": "Answered",
+    "42a5c1ba-1ba2-4195-99be-58625f6a6038": "Answered",
+    "a3d9d2bb-ec65-4626-a9b7-3c5fdaf1121d": "Answered",
+    "35108f55-c5ec-4851-ad36-af568b5bcc30": "Answered",
+    "0bcd298a-3a95-437b-a827-cda533583659": "Answered"
+  },
+  "streamedQuestions": [],
+  "streamedAnswers": {},
+  "latestFolder": null,
+  "incrementStatuses": {
+    "INC-1": "SPEC_READY"
+  },
+  "activeIncrementId": null,
+  "prefetchedSpecs": {},
+  "partStatuses": {},
+  "activePartIndex": null,
+  "currentJobId": null,
+  "partTranscripts": {},
+  "hasBootstrapped": true,
+  "hasPlan": true,
+  "hasTriggeredOrchestration": false,
+  "inputDraft": "",
+  "messages": [
+    {
+      "id": "msg-1773674016949-yn2lvp6a0",
+      "role": "assistant",
+      "content": "Hi—ready to help with the “Sign in with valid credentials” story. I have the product backlog and architecture context available. Are there any specific architecture entities or diagrams you’d like to highlight as most relevant for this work item?",
+      "timestamp": "2026-03-16T15:13:36.949Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773674097857-zpndr8exb",
+      "role": "user",
+      "content": "I've provided the architectural context, please give me your understanding of this feature",
+      "timestamp": "2026-03-16T15:14:57.857Z"
+    },
+    {
+      "id": "msg-1773674165234-ilzffuuzf",
+      "role": "assistant",
+      "content": "Here’s my current understanding; I have 6 questions to confirm details before we lock scope.",
+      "timestamp": "2026-03-16T15:16:05.234Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773675875605-p6tvog92r",
+      "role": "user",
+      "content": "Answers to your questions:\n\nQ: Where are credentials validated—local password store in Rivvy Portal Services or an external IdP (e.g., Auth0/Cognito)? If external, do we use a hosted login or resource-owner password flow?\nA: local password store\n\nQ: How exactly is 'Admin' determined—global role, per-organization role, or separate flag? If multiple roles exist, what is the exact precedence and does default_org_id affect routing?\nA: 'Admin' is a global role\n\nQ: Is the definition of 'active account' solely UserAccount.status = 'ACTIVE', or must email verification or organization membership also be present?\nA: just 'ACTIVE'\n\nQ: Is the 180-day Remember me an absolute expiry or sliding with activity? Should sign-out immediately invalidate any persistent tokens across devices?\nA: sliding. Yes\n\nQ: What is the specific non-remember session timeout duration, and is it absolute or idle-based?\nA: you decide\n\nQ: After successful sign-in from a protected deep link, should we return users to the originally requested URL instead of the role-based landing route?\nA: originally requested URL",
+      "timestamp": "2026-03-16T15:44:35.605Z"
+    },
+    {
+      "id": "msg-1773675991567-xhvv11m6t",
+      "role": "assistant",
+      "content": "Thanks for the clarifications—updated scope and criteria below. I’m ready to proceed to spec.",
+      "timestamp": "2026-03-16T15:46:31.567Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773675991606-utqfuso4c",
+      "role": "assistant",
+      "content": "Okay, let's see if we need to break this work item into parts...",
+      "timestamp": "2026-03-16T15:46:31.606Z",
+      "persona": "Product Manager"
+    },
+    {
+      "id": "msg-1773676128950-kpudlmy26",
+      "role": "assistant",
+      "content": "This item is small enough, so let's get the software architect to review this.",
+      "timestamp": "2026-03-16T15:48:48.950Z",
+      "persona": "Product Manager"
+    }
+  ]
+}

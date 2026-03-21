@@ -1,0 +1,144 @@
+{
+  "product-manager--backlog": {
+    "taskLabel": "Manage Backlog",
+    "persona": "product-manager",
+    "savedAt": "2026-03-19T11:09:06.757Z",
+    "insights": [
+      {
+        "questions": [
+          "Which epic would you like to work on? You can pick one from the list above, or we can discuss epic priorities first."
+        ],
+        "answer": "1. Q: Which epic would you like to work on? You can pick one from the list above, or we can discuss epic priorities first. A: Login"
+      },
+      {
+        "questions": [
+          "The detailed architecture is quite comprehensive for this epic. Is it well-defined and up to date, or are there areas that have changed or are missing?",
+          "For PoC delivery, which Login features should be prioritized first: Email/Password Sign-In, Forgot Password Flow, Invite Acceptance & First-Time Password Setup, or Post-Login Role & Organization Routing? Please rank or mark must-haves.",
+          "Do you want to keep the current defaults or change any of these: lockout after 5 failed attempts for 15 minutes, reset link expiry 24 hours, temporary password expiry 7 days, Remember me duration 180 days, support email tech@rivvytudios.com?"
+        ],
+        "answer": "1. Q: The detailed architecture is quite comprehensive for this epic. Is it well-defined and up to date, or are there areas that have changed or are missing? A: architecture is up to date\n2. Q: For PoC delivery, which Login features should be prioritized first: Email/Password Sign-In, Forgot Password Flow, Invite Acceptance & First-Time Password Setup, or Post-Login Role & Organization Routing? Please rank or mark must-haves. A: They are in the correct order\n3. Q: Do you want to keep the current defaults or change any of these: lockout after 5 failed attempts for 15 minutes, reset link expiry 24 hours, temporary password expiry 7 days, Remember me duration 180 days, support email tech@rivvytudios.com? A: Yes"
+      },
+      {
+        "questions": [
+          "For the story ‘Sign in with valid credentials’, what acceptance criteria should define success (e.g., authenticated session established, handoff to role-based routing handled separately)?",
+          "What is the standard session duration when Remember me is not selected (e.g., expire after X hours of inactivity)?",
+          "Should we explicitly capture email handling rules (trim leading/trailing whitespace and compare email case-insensitively) in the acceptance criteria for sign-in?"
+        ],
+        "answer": "1. Q: For the story ‘Sign in with valid credentials’, what acceptance criteria should define success (e.g., authenticated session established, handoff to role-based routing handled separately)? A: authenticated session established, handoff to role-based routing handled separately\n2. Q: What is the standard session duration when Remember me is not selected (e.g., expire after X hours of inactivity)? A: 8 hours of inactivity\n3. Q: Should we explicitly capture email handling rules (trim leading/trailing whitespace and compare email case-insensitively) in the acceptance criteria for sign-in? A: Yes"
+      },
+      {
+        "questions": [
+          "Which epic would you like to work on next? Options include PoC epics (New Brief, Brand Vault, Screening Room, Client Dashboard, User Profile, Rivvy Admin, Rivvy Producer Dashboard) or MVP epics (Brief Intake & Triage, Project & Workflow Management, Approvals & Audit Trail, Collaboration & Versioning, Brand Vault Enhancements, Producer Multi-Org Productivity, Notifications & Activity Feed, Admin & Org Management, Reliability & Support Readiness). You can also revisit the Login epic we just completed.",
+          "Would you prefer to discuss priorities across epics first to decide what’s next?"
+        ],
+        "answer": "1. Q: Which epic would you like to work on next? Options include PoC epics (New Brief, Brand Vault, Screening Room, Client Dashboard, User Profile, Rivvy Admin, Rivvy Producer Dashboard) or MVP epics (Brief Intake & Triage, Project & Workflow Management, Approvals & Audit Trail, Collaboration & Versioning, Brand Vault Enhancements, Producer Multi-Org Productivity, Notifications & Activity Feed, Admin & Org Management, Reliability & Support Readiness). You can also revisit the Login epic we just completed. A: Login\n2. Q: Would you prefer to discuss priorities across epics first to decide what’s next? A: No"
+      },
+      {
+        "questions": [
+          "You selected Login. It already includes 4 features and 12 stories. What would you like to change about this epic’s backlog?"
+        ],
+        "answer": "1. Q: You selected Login. It already includes 4 features and 12 stories. What would you like to change about this epic’s backlog? A: I think that some of the stories are a bit too granular and they can be merged.  Since \"Sign in with valid credentials\" is already complete, ignore it.  Review the other 11 stories and suggest how some of them can be merged"
+      },
+      {
+        "questions": [
+          "Please confirm these proposed merges and surviving story names (yes/no for all, or note exceptions): 1) Invalid credentials + Account lockout + Disabled account handling -> “Blocked and failed sign-in handling (enumeration-safe, lockout, disabled)” [survive: 1f54a69c-b8d1-41b0-b57b-d82008a0ca00]; 2) Request password reset + Expired/invalid token handling -> “Request reset and token lifecycle (enumeration-safe)” [survive: 6ad14230-89ca-41d9-a4e9-00813db8ad96]; 3) First-time login + Temp password expiry/invalid -> “First-time login and temp password handling” [survive: c223f933-3c31-4e6c-bca5-bb63e3bb0cd2]; 4) Admin routing + Client/Producer routing -> “Role-based routing after authentication” [survive: 711ec836-1a27-47e6-a7fb-3fcd74c76fd3].",
+          "If approved, should we carry forward and consolidate all acceptance criteria from the merged stories into the surviving story verbatim, or do you want any AC trimmed/edited?",
+          "Do you want to keep “Remember me” (d6af57b7-4e1c-470a-90f0-1fd0ea93f3bf) as a separate story, or merge it elsewhere (noting the core sign-in success story is already completed)?"
+        ],
+        "answer": "1. Q: Please confirm these proposed merges and surviving story names (yes/no for all, or note exceptions): 1) Invalid credentials + Account lockout + Disabled account handling -> “Blocked and failed sign-in handling (enumeration-safe, lockout, disabled)” [survive: 1f54a69c-b8d1-41b0-b57b-d82008a0ca00]; 2) Request password reset + Expired/invalid token handling -> “Request reset and token lifecycle (enumeration-safe)” [survive: 6ad14230-89ca-41d9-a4e9-00813db8ad96]; 3) First-time login + Temp password expiry/invalid -> “First-time login and temp password handling” [survive: c223f933-3c31-4e6c-bca5-bb63e3bb0cd2]; 4) Admin routing + Client/Producer routing -> “Role-based routing after authentication” [survive: 711ec836-1a27-47e6-a7fb-3fcd74c76fd3]. A: Confirmed\n2. Q: If approved, should we carry forward and consolidate all acceptance criteria from the merged stories into the surviving story verbatim, or do you want any AC trimmed/edited? A: consolidate all acceptance criteria but remove an item if duplicated\n3. Q: Do you want to keep “Remember me” (d6af57b7-4e1c-470a-90f0-1fd0ea93f3bf) as a separate story, or merge it elsewhere (noting the core sign-in success story is already completed)? A: keep “Remember me” (d6af57b7-4e1c-470a-90f0-1fd0ea93f3bf) as a separate story"
+      },
+      {
+        "questions": [
+          "Which epic would you like to work on next? Options include PoC epics: New Brief, Brand Vault, Screening Room, Client Dashboard, User Profile, Rivvy Admin, Rivvy Producer Dashboard; or MVP epics: Brief Intake & Triage, Project & Workflow Management, Approvals & Audit Trail, Collaboration & Versioning, Brand Vault Enhancements, Producer Multi-Org Productivity, Notifications & Activity Feed, Admin & Org Management, Reliability & Support Readiness. We can also revisit Login.",
+          "Would you like to discuss cross-epic priorities before choosing what’s next?"
+        ],
+        "answer": "1. Q: Which epic would you like to work on next? Options include PoC epics: New Brief, Brand Vault, Screening Room, Client Dashboard, User Profile, Rivvy Admin, Rivvy Producer Dashboard; or MVP epics: Brief Intake & Triage, Project & Workflow Management, Approvals & Audit Trail, Collaboration & Versioning, Brand Vault Enhancements, Producer Multi-Org Productivity, Notifications & Activity Feed, Admin & Org Management, Reliability & Support Readiness. We can also revisit Login. A: New Brief\n2. Q: Would you like to discuss cross-epic priorities before choosing what’s next? A: No"
+      },
+      {
+        "questions": [
+          "You selected New Brief. It already includes 7 features and 22 stories. What would you like to change about this epic’s backlog?"
+        ],
+        "answer": "1. Q: You selected New Brief. It already includes 7 features and 22 stories. What would you like to change about this epic’s backlog? A: There are too many stories in my opinion and many of the stories for a given feature can be merged.  Suggest a reduced set of merged story(ies) for the 7 features"
+      },
+      {
+        "questions": [
+          "Please confirm these proposed merges per feature (surviving story IDs in brackets). Any exceptions? 1) Brief Creation & Draft Mgmt: Merge “Save changes to draft” + “Resume editing an existing draft” -> “Draft save and resume” [70eac616-845f-4b12-b28d-3e24fa887312] (keep “Start a new Brief as draft” as-is, completed). 2) Brief Items Mgmt: Merge Add + Reorder + Remove -> “Manage Brief Items structure (add, reorder, remove)” [f404d097-1269-454b-897d-bac7d16fc903]; keep a separate “Edit Brief Item fields” [80c712a6-4be2-4a0c-9f08-d814ad71e49b]. 3) Deliverables per Item: Merge Add + Reorder + Remove -> “Manage Deliverables structure (add, reorder, remove)” [0d00ba02-2ad6-40fc-a8fc-fb7679363718]; keep a separate “Edit Deliverable fields” [356043e8-0c74-4221-bdee-2e3a42016e8f]. 4) References & Metadata: Merge project-level + deliverable-level -> “References, metadata, and deliverable notes/extras” [c162a929-d6d8-4474-8caa-fd0f5ad84c1c]. 5) Submission Workflow: Merge Validate + Submit -> “Validate and submit brief” [31026716-361b-4d51-9bda-8a87e0c5e858]. 6) Producer Review & Edit: Merge View + Edit -> “Producer review and field editing” [963ddbbc-cb63-490d-bc08-678bba6a9c9c]; Merge Lock/Unlock + Status -> “Lock/unlock and status management” [948f0753-2e89-4986-8dc6-3d2e00d6ce1b]. 7) Access Control & Visibility: Merge all -> “Access control and organization scoping” [3094568c-4b2b-4d28-b26e-dc4b28052535].",
+          "Should I consolidate all acceptance criteria from the merged stories into the surviving stories and remove duplicates (same approach we used on Login)?",
+          "For further reduction, do you want Producer Review & Edit as a single story (combine the two survivors) or keep them as two for clarity?"
+        ],
+        "answer": "1. Q: Please confirm these proposed merges per feature (surviving story IDs in brackets). Any exceptions? 1) Brief Creation & Draft Mgmt: Merge “Save changes to draft” + “Resume editing an existing draft” -> “Draft save and resume” [70eac616-845f-4b12-b28d-3e24fa887312] (keep “Start a new Brief as draft” as-is, completed). 2) Brief Items Mgmt: Merge Add + Reorder + Remove -> “Manage Brief Items structure (add, reorder, remove)” [f404d097-1269-454b-897d-bac7d16fc903]; keep a separate “Edit Brief Item fields” [80c712a6-4be2-4a0c-9f08-d814ad71e49b]. 3) Deliverables per Item: Merge Add + Reorder + Remove -> “Manage Deliverables structure (add, reorder, remove)” [0d00ba02-2ad6-40fc-a8fc-fb7679363718]; keep a separate “Edit Deliverable fields” [356043e8-0c74-4221-bdee-2e3a42016e8f]. 4) References & Metadata: Merge project-level + deliverable-level -> “References, metadata, and deliverable notes/extras” [c162a929-d6d8-4474-8caa-fd0f5ad84c1c]. 5) Submission Workflow: Merge Validate + Submit -> “Validate and submit brief” [31026716-361b-4d51-9bda-8a87e0c5e858]. 6) Producer Review & Edit: Merge View + Edit -> “Producer review and field editing” [963ddbbc-cb63-490d-bc08-678bba6a9c9c]; Merge Lock/Unlock + Status -> “Lock/unlock and status management” [948f0753-2e89-4986-8dc6-3d2e00d6ce1b]. 7) Access Control & Visibility: Merge all -> “Access control and organization scoping” [3094568c-4b2b-4d28-b26e-dc4b28052535]. A: Confirmed\n2. Q: Should I consolidate all acceptance criteria from the merged stories into the surviving stories and remove duplicates (same approach we used on Login)? A: Yes\n3. Q: For further reduction, do you want Producer Review & Edit as a single story (combine the two survivors) or keep them as two for clarity? A: keep them as two"
+      }
+    ]
+  },
+  "test-engineer--test-strategy": {
+    "taskLabel": "Test Strategy",
+    "persona": "test-engineer",
+    "savedAt": "2026-03-18T11:01:57.973Z",
+    "insights": [
+      {
+        "questions": [
+          "What is the current delivery scope and timeline (e.g., PoC for Screening Room now vs broader MVP), and which modules are in scope for this phase?",
+          "What are the top 3 risk areas or failure modes you’re most concerned about for Screening Room (e.g., video upload/playback reliability, timecode accuracy, comment locking on completion)?",
+          "How is the team structured for this phase (number of developers, any dedicated QA), and who owns test reviews and sign-off?",
+          "What is your planned release cadence and environment setup (dev/staging/production), including any constraints on test data in shared environments?"
+        ],
+        "answer": "1. Q: What is the current delivery scope and timeline (e.g., PoC for Screening Room now vs broader MVP), and which modules are in scope for this phase? A: PoC in March 2026, MVP in May 2026\n2. Q: What are the top 3 risk areas or failure modes you’re most concerned about for Screening Room (e.g., video upload/playback reliability, timecode accuracy, comment locking on completion)? A: Yes, those 3\n3. Q: How is the team structured for this phase (number of developers, any dedicated QA), and who owns test reviews and sign-off? A: Single engineer to build and test, no dedicated QAs\n4. Q: What is your planned release cadence and environment setup (dev/staging/production), including any constraints on test data in shared environments? A: Ad-hoc for now"
+      },
+      {
+        "questions": [
+          "For the PoC vs MVP, which test levels are must-have for PoC: unit (frontend/backend), integration (API+DB), end-to-end browser flows, and any minimal performance/security/accessibility checks?",
+          "Do you have a preference for end-to-end tooling (Playwright vs Cypress) for Screening Room happy paths, or should we proceed with Playwright for speed and cross-browser later?",
+          "Can we use Testcontainers with PostgreSQL for backend integration tests in CI, or do you prefer an in-memory or shared DB for now?",
+          "Where will video files be stored in the PoC (local filesystem, S3, other), and should tests hit a real bucket/emulator or use mocks/stubs?"
+        ],
+        "answer": "1. Q: For the PoC vs MVP, which test levels are must-have for PoC: unit (frontend/backend), integration (API+DB), end-to-end browser flows, and any minimal performance/security/accessibility checks? A: unit (frontend/backend), functional, integration (API+DB), end-to-end browser flows.  Light touch NFR related tests for MVP only\n2. Q: Do you have a preference for end-to-end tooling (Playwright vs Cypress) for Screening Room happy paths, or should we proceed with Playwright for speed and cross-browser later? A: Playwright\n3. Q: Can we use Testcontainers with PostgreSQL for backend integration tests in CI, or do you prefer an in-memory or shared DB for now? A: Testcontainers with PostgreSQL for backend integration tests in CI\n4. Q: Where will video files be stored in the PoC (local filesystem, S3, other), and should tests hit a real bucket/emulator or use mocks/stubs? A: S3 and tests hit a real bucket"
+      },
+      {
+        "questions": [
+          "Approve these PoC CI coverage thresholds: Frontend unit ≥75% lines and ≥60% branches; Backend unit ≥80% lines and ≥70% branches. Adjust if needed.",
+          "Integration/E2E coverage proposal: Integration tests exercise all DB-touching repositories/services (happy + at least one failure path each); E2E covers these critical flows — (1) Producer uploads a new version; (2) Client comments on latest version and clicking a timecoded comment seeks playback; (3) Viewing a non-latest version prevents new comments and forces new comments to latest; (4) Producer marks complete, which locks comments/uploads, and can be reversed. OK?",
+          "Mutation testing: adopt for MVP only (targets: Backend PIT ≥60% mutation score; Frontend Stryker optional), and skip for PoC. Agree?",
+          "Confirm that performance, security, and accessibility coverage targets are excluded from PoC and deferred as light-touch checks for MVP."
+        ],
+        "answer": "1. Q: Approve these PoC CI coverage thresholds: Frontend unit ≥75% lines and ≥60% branches; Backend unit ≥80% lines and ≥70% branches. Adjust if needed. A: Approve\n2. Q: Integration/E2E coverage proposal: Integration tests exercise all DB-touching repositories/services (happy + at least one failure path each); E2E covers these critical flows — (1) Producer uploads a new version; (2) Client comments on latest version and clicking a timecoded comment seeks playback; (3) Viewing a non-latest version prevents new comments and forces new comments to latest; (4) Producer marks complete, which locks comments/uploads, and can be reversed. OK? A: Ok\n3. Q: Mutation testing: adopt for MVP only (targets: Backend PIT ≥60% mutation score; Frontend Stryker optional), and skip for PoC. Agree? A: Agree\n4. Q: Confirm that performance, security, and accessibility coverage targets are excluded from PoC and deferred as light-touch checks for MVP. A: Confirmed"
+      },
+      {
+        "questions": [
+          "Frontend: Confirm Vitest + React Testing Library (+ @testing-library/user-event), MSW for API mocking, c8/Istanbul for coverage, and ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged). OK?",
+          "Backend: Confirm JUnit 5 + Spring Boot Test, Testcontainers (PostgreSQL), Mockito for mocking, JaCoCo for coverage in CI, and PIT mutation testing starting in MVP. OK?",
+          "E2E (Playwright): Should PoC run Chromium-only in CI with trace/video/screenshots on failure, and expand to cross-browser in MVP?",
+          "Auth & Data for E2E: Use real login flow with seeded test users or a test-only auth bypass? How should test data be seeded/reset (API seeding endpoints vs DB reset/fixtures)?",
+          "S3 in CI: Do we have a dedicated test bucket and IAM creds for CI with a bucket prefix (e.g., e2e/{buildId}/) and a life-cycle rule (e.g., auto-delete after 7 days)?"
+        ],
+        "answer": "1. Q: Frontend: Confirm Vitest + React Testing Library (+ @testing-library/user-event), MSW for API mocking, c8/Istanbul for coverage, and ESLint + Prettier + TypeScript checks via pre-commit (Husky/lint-staged). OK? A: Ok\n2. Q: Backend: Confirm JUnit 5 + Spring Boot Test, Testcontainers (PostgreSQL), Mockito for mocking, JaCoCo for coverage in CI, and PIT mutation testing starting in MVP. OK? A: Ok\n3. Q: E2E (Playwright): Should PoC run Chromium-only in CI with trace/video/screenshots on failure, and expand to cross-browser in MVP? A: Chromium-only\n4. Q: Auth & Data for E2E: Use real login flow with seeded test users or a test-only auth bypass? How should test data be seeded/reset (API seeding endpoints vs DB reset/fixtures)? A: Use real login flow with seeded test users.  Potential seed data is added using liquibase\n5. Q: S3 in CI: Do we have a dedicated test bucket and IAM creds for CI with a bucket prefix (e.g., e2e/{buildId}/) and a life-cycle rule (e.g., auto-delete after 7 days)? A: We can create them as necessary"
+      },
+      {
+        "questions": [
+          "PR gates: Approve requiring lint, typecheck, frontend/backend unit tests with the approved coverage thresholds, and backend integration tests to pass on every PR; allow self-approval (single engineer) but PR required for all changes?",
+          "E2E execution: Run Playwright (Chromium-only) on every PR against a temporary preview/staging environment, or only on merges to main? Which environment should E2E target (dedicated staging vs ephemeral per-PR)?",
+          "Pre-deployment checks: Confirm mandatory Liquibase validate/migrate, a short smoke suite (upload, comment seek, complete/uncomplete), S3 write/read smoke, and rollback plan (e.g., DB backup + app rollback). OK?",
+          "Security gates for PoC: enable basic dependency and secret scanning in CI (e.g., OWASP/Snyk and git-secrets) now, or defer these to MVP?"
+        ],
+        "answer": "1. Q: PR gates: Approve requiring lint, typecheck, frontend/backend unit tests with the approved coverage thresholds, and backend integration tests to pass on every PR; allow self-approval (single engineer) but PR required for all changes? A: Yes\n2. Q: E2E execution: Run Playwright (Chromium-only) on every PR against a temporary preview/staging environment, or only on merges to main? Which environment should E2E target (dedicated staging vs ephemeral per-PR)? A: only on merges to main\n3. Q: Pre-deployment checks: Confirm mandatory Liquibase validate/migrate, a short smoke suite (upload, comment seek, complete/uncomplete), S3 write/read smoke, and rollback plan (e.g., DB backup + app rollback). OK? A: Ok\n4. Q: Security gates for PoC: enable basic dependency and secret scanning in CI (e.g., OWASP/Snyk and git-secrets) now, or defer these to MVP? A: defer these to MVP"
+      },
+      {
+        "questions": [
+          "Development approach: adopt test-first for unit/integration on risky logic, with test-after acceptable for UI wiring. Approve?",
+          "Flaky tests policy: allow 1 retry for E2E; if still failing, fail the pipeline. Quarantine only with an issue opened and fix within 48 hours. Approve?",
+          "E2E data isolation: suite creates its own project/entities, uses a unique S3 key prefix per run, and cleans up at end to avoid polluting shared staging. Approve?",
+          "Documentation and naming: user-centric Given/When/Then-style test names, tests colocated with code, and a lightweight “Test Notes” doc listing critical E2E flows and test users/seeds. OK?"
+        ],
+        "answer": "1. Q: Development approach: adopt test-first for unit/integration on risky logic, with test-after acceptable for UI wiring. Approve? A: test-after only\n2. Q: Flaky tests policy: allow 1 retry for E2E; if still failing, fail the pipeline. Quarantine only with an issue opened and fix within 48 hours. Approve? A: Approve\n3. Q: E2E data isolation: suite creates its own project/entities, uses a unique S3 key prefix per run, and cleans up at end to avoid polluting shared staging. Approve? A: Approve\n4. Q: Documentation and naming: user-centric Given/When/Then-style test names, tests colocated with code, and a lightweight “Test Notes” doc listing critical E2E flows and test users/seeds. OK? A: OK"
+      },
+      {
+        "questions": [
+          "Confirm E2E target environment: should Playwright on merges to main run against a shared staging environment?",
+          "S3 usage by test level: keep real S3 only for E2E and pre-deploy smoke while mocking S3 in unit/integration tests to reduce flakiness/cost, or do you want backend integration tests to also hit real S3?",
+          "Post-deployment: include an immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Approve?",
+          "S3 hygiene: add a lifecycle rule to auto-delete test artifacts older than 7 days in addition to test-run cleanup. Approve?"
+        ],
+        "answer": "1. Q: Confirm E2E target environment: should Playwright on merges to main run against a shared staging environment? A: Confirmed\n2. Q: S3 usage by test level: keep real S3 only for E2E and pre-deploy smoke while mocking S3 in unit/integration tests to reduce flakiness/cost, or do you want backend integration tests to also hit real S3? A: backend integration tests doesn't need real S3\n3. Q: Post-deployment: include an immediate smoke (health, login, upload, comment seek, complete/uncomplete) with automatic rollback on failure. Approve? A: Approve\n4. Q: S3 hygiene: add a lifecycle rule to auto-delete test artifacts older than 7 days in addition to test-run cleanup. Approve? A: Approve"
+      }
+    ]
+  }
+}

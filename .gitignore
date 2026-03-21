@@ -1,0 +1,102 @@
+######################################
+# IntelliJ IDEA
+######################################
+.idea/
+*.iml
+*.iws
+out/
+
+######################################
+# OS files
+######################################
+.DS_Store
+Thumbs.db
+
+######################################
+# Logs
+######################################
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+######################################
+# Environment / secrets
+######################################
+.env
+.env.*
+!.env.example
+
+######################################
+# Java / Maven / Gradle
+######################################
+# Maven
+target/
+nul
+
+# Gradle
+.gradle/
+build/
+
+# Java compiled files
+*.class
+
+######################################
+# Spring Boot
+######################################
+# Application logs & temp
+*.log
+*.pid
+*.seed
+
+######################################
+# Node / React / TypeScript
+######################################
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Vite
+.vite/
+
+######################################
+# TypeScript
+######################################
+*.tsbuildinfo
+
+######################################
+# Package managers
+######################################
+# Lock files (keep them!)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+######################################
+# Testing
+######################################
+coverage/
+jest-stare/
+
+######################################
+# Docker
+######################################
+docker-compose.override.yml
+
+######################################
+# Misc
+######################################
+*.swp
+*.swo
+*~
+
+######################################
+# Optional: ignore generated frontend builds inside backend
+######################################
+# If React is built into Spring static resources:
+# src/main/resources/static/

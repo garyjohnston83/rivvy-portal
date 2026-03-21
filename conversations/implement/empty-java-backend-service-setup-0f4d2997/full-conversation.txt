@@ -1,0 +1,634 @@
+=== IMPLEMENT ASSISTANT CONVERSATION TRANSCRIPT ===
+Generated: 2026-03-09T14:20:45.585Z
+Session ID: c2ef880c-843b-4545-bc09-4692667bbbe2
+Created: 2026-03-09T14:15:59.952Z
+
+--- [SYSTEM] (phase: bootstrap) @ 2026-03-09T14:15:59.951Z ---
+You are an Implementation Planning Assistant starting a new session with rich product and architecture context.
+
+YOUR ROLE:
+You are greeting the user and acknowledging the feature they are about to work on. You have been provided with product backlog context and architecture meta-model context to help you understand the overall system.
+
+WORK ITEM CONTEXT:
+- Title: Empty Java Backend Service Setup
+- Type: FEATURE
+- Description: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+
+PRODUCT BACKLOG SUMMARY:
+- Initiative: Prove Client Self-Service Creative Delivery (PoC)
+  - Epic: Technical Foundations
+    Description: Goal:  
+Setup empty Frontend and Backend services with the correct dependencies and folder structures etc.
+    - Feature: Empty Java Backend Service Setup
+      Description: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+- Initiative: Operationalise & Scale Client Delivery (MVP)
+
+ARCHITECTURE META-MODEL SUMMARY:
+Services:
+  - Rivvy Portal UI (services)
+  - Rivvy Portal Services (services)
+  - Rivvy Portal DB (services)
+  - AWS S3 Bucket (services)
+Data Entities:
+  - Test (logicalDataEntities)
+Interfaces:
+  - Portal API (interfaces)
+Relationships:
+  - Rivvy Portal Services --[exposes]--> Portal API
+
+INSTRUCTIONS:
+1. Acknowledge the feature/work item the user is about to implement
+2. Acknowledge that you have access to the product backlog and architecture context
+3. Respond with a short, welcoming message (2-3 sentences maximum)
+4. Ask the user if there are any specific architecture entities or diagrams they would like to highlight as relevant to this work item
+
+RULES - DO NOT VIOLATE:
+1. DO NOT ask detailed clarifying questions about requirements
+2. DO NOT propose solutions or implementation approaches
+3. DO NOT refine requirements or suggest changes to the work item
+4. DO NOT generate code, specs, or technical details
+5. DO NOT call MCP tools or any external tools
+6. Keep your response short and welcoming - this is just an initial greeting
+7. Only ask about highlighting relevant architecture context, nothing else
+
+RESPONSE STYLE:
+- Short and welcoming (2-3 sentences maximum)
+- Acknowledge the feature by name
+- Mention you have product and architecture context available
+- End with a simple question asking about relevant architecture/diagrams
+
+--- [USER] (phase: bootstrap) @ 2026-03-09T14:15:59.953Z ---
+
+
+--- [ASSISTANT] (phase: bootstrap) @ 2026-03-09T14:16:06.948Z ---
+Hi! Ready to support the “Empty Java Backend Service Setup” feature, and I have the product backlog and architecture context on hand. Are there any specific architecture entities or diagrams you’d like to highlight as most relevant for this work item?
+
+--- [SYSTEM] (phase: refine) @ 2026-03-09T14:16:17.493Z ---
+You are an Implementation Planner assistant that helps clarify and refine work item requirements before implementation begins.
+
+## CONTEXT
+Work Item: Empty Java Backend Service Setup
+Type: FEATURE
+Description: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+
+Selected Architecture Context:
+- Entity IDs: applications::app-mlxwja0d-7swkq, app_components::comp-mlxwjp8s-enkq6, services::svc-mlxwld2d-zzncf
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    }
+  ]
+}
+
+## YOUR ROLE
+You are conducting a structured refinement dialog to fully understand the user's requirements. Your goal is to ensure complete clarity and unambiguous intent before any implementation work starts.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown code blocks, no prose outside the JSON structure.
+Your entire response must be a single valid JSON object matching this schema:
+
+{
+  "schemaVersion": "1.1",
+  "message": "Your conversational response to the user (this appears in the chat bubble)",
+  "featureUnderstanding": "Current human-readable definition of the feature based on conversation",
+  "scope": {
+    "in": ["Items explicitly included in scope"],
+    "out": ["Items explicitly excluded from scope"]
+  },
+  "assumptions": ["Assumptions you are making that could be confirmed/refuted"],
+  "acceptanceCriteria": ["Testable success conditions (populate as they become clear)"],
+  "openQuestions": ["Questions that need user clarification before implementation"],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+## FIELD GUIDELINES
+- "message": Chat bubble text (1-2 sentences max, single paragraph). Keep brief. Do NOT include bullet lists, numbered lists, section headers, or duplicated content from openQuestions/scope/acceptanceCriteria. If questions exist, say "I have N questions" without repeating them.
+- "featureUnderstanding": Evolving definition of what the feature does. Update as clarity improves.
+- "scope.in": What IS included. Be specific.
+- "scope.out": What is NOT included. Be explicit about boundaries.
+- "assumptions": Things you're assuming that could be wrong. Make them falsifiable.
+- "acceptanceCriteria": Add testable criteria as they become clear from conversation.
+- "openQuestions": Questions blocking progress. Remove as user answers them.
+- "plannerReadyForSpec": Set to true ONLY when openQuestions is empty AND you have sufficient clarity.
+- "implementationPlan": MUST be null during this phase. Plans are generated in implementation_planning phase.
+
+## RULES - DO NOT VIOLATE
+1. Respond with VALID JSON ONLY - no markdown, no prose outside JSON
+2. Include ALL fields, even if arrays are empty
+3. DO NOT generate code, specs, or implementation details
+4. DO NOT call MCP tools or external tools
+5. DO NOT make up information about architecture not in resolved context
+6. Keep "message" concise but helpful
+7. Ground all content in the provided work item and architecture context
+8. Reference entities by name from resolved context, not by raw IDs
+9. "implementationPlan" must always be null in this phase
+10. Keep "message" under 300 characters. Do not use bullets, numbered lists, or repeat structured content.
+
+## PROGRESSION
+1. Early turns: Ask 3-7 focused clarifying questions, build understanding
+2. Middle turns: Refine scope boundaries, confirm assumptions, add acceptance criteria
+3. Later turns: All questions answered, comprehensive definition ready
+4. When ready: Set plannerReadyForSpec=true, empty openQuestions array
+
+--- [USER] (phase: refine) @ 2026-03-09T14:16:17.493Z ---
+I've provided the architectural context, please give me your understanding of this feature
+
+--- [ASSISTANT] (phase: refine) @ 2026-03-09T14:17:18.530Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Here’s my current understanding of the empty Java backend setup for Rivvy Portal; I have 7 questions to confirm scope and dependencies.",
+  "featureUnderstanding": "Create a new empty Java 21 Spring Boot 3.x backend service project for the Rivvy Portal application, aligned to the RS Service Tier and representing the Rivvy Portal Services that will host the Portal API. Use Maven coordinates com.rivvystudios:portal:0.0.1 with main package com.rivvystudios.portal, establish standard source/test/resources folders, a bootstrapping Application class, baseline dependencies, and initial configuration. No business logic or API endpoints beyond minimal operational scaffolding.",
+  "scope": {
+    "in": [
+      "New Spring Boot 3.x Maven project aligned to Rivvy Portal Services within the Rivvy Portal application (RS Service Tier)",
+      "Maven coordinates: groupId=com.rivvystudios, artifactId=portal, version=0.0.1",
+      "Main package: com.rivvystudios.portal with an application entrypoint",
+      "Standard source/test/resources folder structure and placeholder packages for future layers",
+      "Java 21 toolchain and compiler settings in Maven",
+      "Baseline dependency management and testing setup per confirmed list",
+      "Initial application configuration file(s) and minimal README"
+    ],
+    "out": [
+      "Business/domain endpoints or controllers for the Portal API",
+      "Database, messaging, or external system integrations",
+      "Security/authentication/authorization setup",
+      "Infrastructure/deployment (Docker/Kubernetes/IaC) and CI/CD pipelines",
+      "Cloud configuration or environment provisioning",
+      "Advanced observability beyond defaults (metrics, tracing, logging customizations)",
+      "OpenAPI specification or API definitions beyond placeholders"
+    ]
+  },
+  "assumptions": [
+    "Single-module Maven project (not a multi-module build).",
+    "Packaging is an executable JAR.",
+    "Actuator may be included for health checks; no custom endpoints unless requested.",
+    "No database, messaging, or cache dependencies initially.",
+    "No Lombok or springdoc-openapi unless explicitly requested.",
+    "Use default Logback logging without JSON formatting unless specified.",
+    "A minimal README is sufficient for build/run instructions."
+  ],
+  "acceptanceCriteria": [
+    "Project builds with Maven on Java 21 and uses Spring Boot 3.x parent/BOM.",
+    "Project coordinates resolve to com.rivvystudios:portal:0.0.1.",
+    "Main class under com.rivvystudios.portal starts the application successfully.",
+    "Standard src/main/java, src/main/resources, and src/test/java directories exist.",
+    "Maven test phase runs and passes with the included test setup.",
+    "Only the agreed baseline dependencies are present; no unintended starters are included.",
+    "No business endpoints are exposed (unless explicitly requested as scaffolding)."
+  ],
+  "openQuestions": [
+    "Confirm Maven coordinates: groupId=com.rivvystudios, artifactId=portal, version=0.0.1?",
+    "Single-module or multi-module structure (e.g., core, api) for Rivvy Portal Services?",
+    "Which initial dependencies should be included (e.g., web, actuator, validation, lombok, springdoc-openapi, testcontainers)?",
+    "Include containerization (Dockerfile/Jib) and a basic CI workflow now, or defer?",
+    "Create environment profiles (dev/test/prod) and set spring.application.name and default server.port? If so, what values?",
+    "Scaffold only health via Actuator, or also a base versioned API path (e.g., /api/v1) with an empty controller?",
+    "Any code quality and formatting standards to enforce (Checkstyle/Spotless, .editorconfig), and preferred package structure conventions?"
+  ],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+--- [SYSTEM] (phase: refine) @ 2026-03-09T14:19:22.261Z ---
+You are an Implementation Planner assistant that helps clarify and refine work item requirements before implementation begins.
+
+## CONTEXT
+Work Item: Empty Java Backend Service Setup
+Type: FEATURE
+Description: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+
+Selected Architecture Context:
+- Entity IDs: applications::app-mlxwja0d-7swkq, app_components::comp-mlxwjp8s-enkq6, services::svc-mlxwld2d-zzncf
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    }
+  ]
+}
+
+## YOUR ROLE
+You are conducting a structured refinement dialog to fully understand the user's requirements. Your goal is to ensure complete clarity and unambiguous intent before any implementation work starts.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown code blocks, no prose outside the JSON structure.
+Your entire response must be a single valid JSON object matching this schema:
+
+{
+  "schemaVersion": "1.1",
+  "message": "Your conversational response to the user (this appears in the chat bubble)",
+  "featureUnderstanding": "Current human-readable definition of the feature based on conversation",
+  "scope": {
+    "in": ["Items explicitly included in scope"],
+    "out": ["Items explicitly excluded from scope"]
+  },
+  "assumptions": ["Assumptions you are making that could be confirmed/refuted"],
+  "acceptanceCriteria": ["Testable success conditions (populate as they become clear)"],
+  "openQuestions": ["Questions that need user clarification before implementation"],
+  "plannerReadyForSpec": false,
+  "implementationPlan": null
+}
+
+## FIELD GUIDELINES
+- "message": Chat bubble text (1-2 sentences max, single paragraph). Keep brief. Do NOT include bullet lists, numbered lists, section headers, or duplicated content from openQuestions/scope/acceptanceCriteria. If questions exist, say "I have N questions" without repeating them.
+- "featureUnderstanding": Evolving definition of what the feature does. Update as clarity improves.
+- "scope.in": What IS included. Be specific.
+- "scope.out": What is NOT included. Be explicit about boundaries.
+- "assumptions": Things you're assuming that could be wrong. Make them falsifiable.
+- "acceptanceCriteria": Add testable criteria as they become clear from conversation.
+- "openQuestions": Questions blocking progress. Remove as user answers them.
+- "plannerReadyForSpec": Set to true ONLY when openQuestions is empty AND you have sufficient clarity.
+- "implementationPlan": MUST be null during this phase. Plans are generated in implementation_planning phase.
+
+## RULES - DO NOT VIOLATE
+1. Respond with VALID JSON ONLY - no markdown, no prose outside JSON
+2. Include ALL fields, even if arrays are empty
+3. DO NOT generate code, specs, or implementation details
+4. DO NOT call MCP tools or external tools
+5. DO NOT make up information about architecture not in resolved context
+6. Keep "message" concise but helpful
+7. Ground all content in the provided work item and architecture context
+8. Reference entities by name from resolved context, not by raw IDs
+9. "implementationPlan" must always be null in this phase
+10. Keep "message" under 300 characters. Do not use bullets, numbered lists, or repeat structured content.
+
+## PROGRESSION
+1. Early turns: Ask 3-7 focused clarifying questions, build understanding
+2. Middle turns: Refine scope boundaries, confirm assumptions, add acceptance criteria
+3. Later turns: All questions answered, comprehensive definition ready
+4. When ready: Set plannerReadyForSpec=true, empty openQuestions array
+
+## FOLLOW-UP GUIDANCE
+The user has already answered your initial set of questions. At this point, only ask further questions if you genuinely cannot proceed without the answer. If something is slightly ambiguous, use your best judgement and document it as an assumption in the "assumptions" array. Do not ask obvious or low-value questions. Aim to set plannerReadyForSpec=true unless there is a critical blocker that truly prevents you from proceeding.
+
+--- [USER] (phase: refine) @ 2026-03-09T14:19:22.261Z ---
+Answers to your questions:
+
+Q: Confirm Maven coordinates: groupId=com.rivvystudios, artifactId=portal, version=0.0.1?
+A: confirmed
+
+Q: Single-module or multi-module structure (e.g., core, api) for Rivvy Portal Services?
+A: single
+
+Q: Which initial dependencies should be included (e.g., web, actuator, validation, lombok, springdoc-openapi, testcontainers)?
+A: web, actuator, validation
+
+Q: Include containerization (Dockerfile/Jib) and a basic CI workflow now, or defer?
+A: defer
+
+Q: Create environment profiles (dev/test/prod) and set spring.application.name and default server.port? If so, what values?
+A: yes, you decide names
+
+Q: Scaffold only health via Actuator, or also a base versioned API path (e.g., /api/v1) with an empty controller?
+A: Scaffold only health via Actuator
+
+Q: Any code quality and formatting standards to enforce (Checkstyle/Spotless, .editorconfig), and preferred package structure conventions?
+A: none
+
+--- [ASSISTANT] (phase: refine) @ 2026-03-09T14:19:59.841Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Thanks—requirements confirmed. I’m ready to produce the spec for the empty Java backend setup.",
+  "featureUnderstanding": "Set up an empty Java 21 Spring Boot 3.x Maven project for the Rivvy Portal application in the RS Service Tier, representing Rivvy Portal Services. Use Maven coordinates com.rivvystudios:portal:0.0.1 and main package com.rivvystudios.portal. Include baseline starters: web, actuator, validation; provide standard source/test/resources structure, an application entrypoint, and minimal configuration with dev/test/prod profiles. Expose only Actuator health (no business endpoints), and include a minimal README. No containerization, CI, security, persistence, or OpenAPI at this stage.",
+  "scope": {
+    "in": [
+      "Single-module Spring Boot 3.x Maven project for Rivvy Portal Services within the Rivvy Portal application (RS Service Tier)",
+      "Maven coordinates: groupId=com.rivvystudios, artifactId=portal, version=0.0.1",
+      "Main package: com.rivvystudios.portal and an application entrypoint class",
+      "Java 21 toolchain/compiler configuration",
+      "Dependencies: spring-boot-starter-web, spring-boot-starter-actuator, spring-boot-starter-validation, spring-boot-starter-test",
+      "Standard src/main/java, src/main/resources, src/test/java folder structure",
+      "Application configuration with dev, test, prod profiles, setting spring.application.name and server.port",
+      "Expose only Actuator health (and default info) endpoints",
+      "Minimal README with build/run instructions"
+    ],
+    "out": [
+      "Business/domain controllers or any Portal API endpoints",
+      "Database, messaging, cache, or external integrations",
+      "Security/authentication/authorization configuration",
+      "Containerization (Docker/Jib) and CI/CD workflows",
+      "Cloud/environment provisioning and infrastructure/IaC",
+      "OpenAPI specification or API documentation",
+      "Advanced observability (custom logging formats, tracing, metrics beyond defaults)",
+      "Code quality tooling (Checkstyle/Spotless) and editor configs"
+    ]
+  },
+  "assumptions": [
+    "Packaging is an executable JAR using the Spring Boot parent/BOM.",
+    "Application profiles are named dev, test, and prod.",
+    "spring.application.name will be rivvy-portal-services across profiles.",
+    "Default server.port is 8080 for all profiles.",
+    "Only default Actuator endpoints (health, info) are enabled; no custom exposure configuration.",
+    "No controllers or REST endpoints are created now, despite including the web starter.",
+    "Default Logback configuration is used; no JSON logging.",
+    "JUnit 5 is used via spring-boot-starter-test with a context-loads smoke test.",
+    "No integration with the Portal API interface at this time; that will come later."
+  ],
+  "acceptanceCriteria": [
+    "Project builds and tests pass with Maven on Java 21 using Spring Boot 3.x parent/BOM.",
+    "Artifact coordinates are com.rivvystudios:portal:0.0.1.",
+    "Main class in package com.rivvystudios.portal starts the application successfully.",
+    "Standard src/main/java, src/main/resources, and src/test/java directories exist.",
+    "Dependencies include web, actuator, validation, and test; no additional starters are present.",
+    "Application profiles dev, test, and prod exist with spring.application.name=rivvy-portal-services.",
+    "Server starts on port 8080 by default.",
+    "No custom REST controllers exist; only Actuator endpoints are available.",
+    "GET /actuator/health returns a 200 status when the app is running.",
+    "README describes how to build and run the service for each profile."
+  ],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": null
+}
+
+--- [SYSTEM] (phase: implementation_planning) @ 2026-03-09T14:19:59.980Z ---
+You are a Product Owner creating an implementation plan for a shaped feature.
+
+## CONTEXT
+Work Item: Empty Java Backend Service Setup
+Type: FEATURE
+Description: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+
+Selected Architecture Context:
+- Entity IDs: applications::app-mlxwja0d-7swkq, app_components::comp-mlxwjp8s-enkq6, services::svc-mlxwld2d-zzncf
+- Diagram IDs: none
+
+Resolved Context Details:
+{
+  "entities": [
+    {
+      "id": "comp-mlxwjp8s-enkq6",
+      "name": "RS Service Tier",
+      "type": "appComponents",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq"
+    },
+    {
+      "id": "app-mlxwja0d-7swkq",
+      "name": "Rivvy Portal",
+      "type": "applications",
+      "category": "application",
+      "appType": "",
+      "status": ""
+    },
+    {
+      "id": "ifc-mm2fbrdg-s9zlg",
+      "name": "Portal API",
+      "type": "interfaces",
+      "category": "application",
+      "serviceId": "svc-mlxwld2d-zzncf",
+      "interfaceType": "REST_API"
+    },
+    {
+      "id": "svc-mlxwld2d-zzncf",
+      "name": "Rivvy Portal Services",
+      "type": "services",
+      "category": "application",
+      "applicationId": "app-mlxwja0d-7swkq",
+      "serviceType": ""
+    }
+  ]
+}
+
+## SHAPED FEATURE (from previous conversation)
+Feature Understanding: Setup empty Backend services with the correct dependencies and folder structures etc.  Main technologies Java 21, Spring Boot 3.x, Maven (artefact naming = com.rivvystudios; portal; v0.0.1).  Main package is com.rivvystudios.portal
+Scope In: As described in work item
+Scope Out: None specified
+Assumptions: None specified
+Acceptance Criteria: Feature works as described
+
+## YOUR TASK
+Create an implementation plan for this feature. The VAST MAJORITY of features should
+be a single increment — do NOT over-decompose.
+
+## SINGLE INCREMENT IS THE DEFAULT
+Almost every feature belongs in exactly 1 increment. One increment means one pass
+through the Software Architect. This is correct for:
+- Creating a new service, API, or endpoint (even with multiple files)
+- Adding a new UI screen or component with backend wiring
+- CRUD features spanning frontend, backend, and database
+- Refactoring or migrating existing code
+- Adding configuration, tooling, or infrastructure
+- Bug fixes of any complexity
+- Features touching up to ~15 files
+
+Use 1 increment unless the feature is genuinely enormous (see below).
+
+## WHEN TO USE 2-3 INCREMENTS (RARE)
+Only create 2-3 increments when the feature is so large that a single increment would
+contain MORE THAN 20 files across unrelated subsystems AND the increments are sequentially
+dependent (increment 2 builds on the output of increment 1). Even then, prefer 2 over 3.
+
+Each increment's "intent" must be detailed enough for a Software Architect to
+implement without further clarification.
+
+## WHEN TO SPLIT INTO INDEPENDENT PARTS (EXTREMELY RARE)
+Set "isSplit": true ONLY when ALL of these conditions are met:
+1. The feature would need 5+ increments AND
+2. At least two groups of increments are truly independent (no shared interfaces, no shared data models, no sequential dependency) AND
+3. Each group is independently large enough to be its own feature (not just a few files)
+
+In practice, almost no feature should be split. If in doubt, use 1 increment.
+
+## RESPONSE FORMAT
+You MUST respond with VALID JSON ONLY. No markdown, no prose outside the JSON structure.
+
+### Standard Plan (most features)
+
+```json
+{
+  "schemaVersion": "1.1",
+  "message": "Here is the plan for Empty Java Backend Service Setup.",
+  "featureUnderstanding": "The full feature definition",
+  "scope": {
+    "in": ["Scope items"],
+    "out": ["Out of scope items"]
+  },
+  "assumptions": ["Assumptions"],
+  "acceptanceCriteria": ["All acceptance criteria"],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Empty Java Backend Service Setup",
+    "increments": [
+      {
+        "id": "INC-1",
+        "partIndex": 1,
+        "title": "Increment title",
+        "intent": "Detailed specification for the Software Architect...",
+        "dependencies": []
+      }
+    ]
+  }
+}
+```
+
+### Split Plan (extremely rare — set "isSplit": true)
+Same structure, but with "isSplit": true when the feature meets ALL splitting criteria above.
+
+```json
+{
+  "schemaVersion": "1.1",
+  "message": "This feature should be split into independent parts.",
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Empty Java Backend Service Setup",
+    "isSplit": true,
+    "increments": [
+      { "id": "INC-1", "partIndex": 1, "title": "Part title", "intent": "Detailed intent...", "dependencies": [] },
+      { "id": "INC-2", "partIndex": 2, "title": "Part title", "intent": "Detailed intent...", "dependencies": ["Part 1: ..."] }
+    ]
+  }
+}
+```
+
+## RULES
+1. ALWAYS include ALL fields, even if arrays are empty
+2. Default to 1 increment. Only create 2-3 when the feature is genuinely enormous (20+ files across unrelated subsystems). NEVER create more than 3 increments.
+3. Each increment's "intent" must be comprehensive enough for a Software Architect to implement
+4. All increment IDs should be sequential (INC-1, INC-2, etc.)
+5. "partIndex" values MUST start at 1 and increment sequentially
+6. "implementationPlan" must NOT be null in this phase
+7. "plannerReadyForSpec" should be true
+8. "openQuestions" should be empty (all questions resolved before this phase)
+9. "dependencies" is optional; when present it must be an array of strings referencing earlier parts
+
+## RESPONSE STYLE
+- Be concise in the "message" field
+- Be detailed in "intent" for each increment
+- Use bullet points within intent fields where helpful
+- Ground all content in the shaped feature and architecture context
+
+--- [USER] (phase: implementation_planning) @ 2026-03-09T14:19:59.981Z ---
+Generate implementation plan
+
+--- [ASSISTANT] (phase: implementation_planning) @ 2026-03-09T14:20:45.585Z ---
+{
+  "schemaVersion": "1.1",
+  "message": "Here is the plan for Empty Java Backend Service Setup.",
+  "featureUnderstanding": "Set up an empty Java 21 Spring Boot 3.x Maven project for the Rivvy Portal application in the RS Service Tier, representing Rivvy Portal Services. Use Maven coordinates com.rivvystudios:portal:0.0.1 and main package com.rivvystudios.portal. Include baseline starters: web, actuator, validation; provide standard source/test/resources structure, an application entrypoint, and minimal configuration with dev/test/prod profiles. Expose only Actuator health (no business endpoints), and include a minimal README. No containerization, CI, security, persistence, or OpenAPI at this stage.",
+  "scope": {
+    "in": [
+      "Single-module Spring Boot 3.x Maven project for Rivvy Portal Services within the Rivvy Portal application (RS Service Tier)",
+      "Maven coordinates: groupId=com.rivvystudios, artifactId=portal, version=0.0.1",
+      "Main package: com.rivvystudios.portal and an application entrypoint class",
+      "Java 21 toolchain/compiler configuration",
+      "Dependencies: spring-boot-starter-web, spring-boot-starter-actuator, spring-boot-starter-validation, spring-boot-starter-test",
+      "Standard src/main/java, src/main/resources, src/test/java folder structure",
+      "Application configuration with dev, test, prod profiles, setting spring.application.name and server.port",
+      "Expose only Actuator health (and default info not exposed over web)",
+      "Minimal README with build/run instructions",
+      "Basic .gitignore appropriate for Maven/Java"
+    ],
+    "out": [
+      "Business/domain controllers or any Portal API endpoints",
+      "Database, messaging, cache, or external integrations",
+      "Security/authentication/authorization configuration",
+      "Containerization (Docker/Jib) and CI/CD workflows",
+      "Cloud/environment provisioning and infrastructure/IaC",
+      "OpenAPI specification or API documentation",
+      "Advanced observability (custom logging formats, tracing, metrics beyond defaults)",
+      "Code quality tooling (Checkstyle/Spotless) and editor configs"
+    ]
+  },
+  "assumptions": [
+    "Packaging is an executable JAR using the Spring Boot parent/BOM.",
+    "Application profiles are named dev, test, and prod.",
+    "spring.application.name will be rivvy-portal-services across profiles.",
+    "Default server.port is 8080 for all profiles.",
+    "Only Actuator health is exposed over web by default (no additional exposure configured).",
+    "No controllers or REST endpoints are created now, despite including the web starter.",
+    "Default Logback configuration is used; no JSON logging.",
+    "JUnit 5 is used via spring-boot-starter-test with a context-loads and a health check smoke test.",
+    "No integration with the Portal API interface at this time; that will come later."
+  ],
+  "acceptanceCriteria": [
+    "Project builds and tests pass with Maven on Java 21 using Spring Boot 3.x parent/BOM.",
+    "Artifact coordinates are com.rivvystudios:portal:0.0.1.",
+    "Main class in package com.rivvystudios.portal starts the application successfully.",
+    "Standard src/main/java, src/main/resources, and src/test/java directories exist.",
+    "Dependencies include web, actuator, validation, and test; no additional starters are present.",
+    "Application profiles dev, test, and prod exist with spring.application.name=rivvy-portal-services.",
+    "Server starts on port 8080 by default.",
+    "No custom REST controllers exist; only Actuator endpoints are available.",
+    "GET /actuator/health returns a 200 status when the app is running.",
+    "README describes how to build and run the service for each profile."
+  ],
+  "openQuestions": [],
+  "plannerReadyForSpec": true,
+  "implementationPlan": {
+    "planTitle": "Implementation Plan for Empty Java Backend Service Setup",
+    "increments": [
+      {
+        "id": "INC-1",
+        "partIndex": 1,
+        "title": "Scaffold Rivvy Portal Services Spring Boot project (Java 21, Maven) with health-only Actuator",
+        "intent": "- Repository and module setup\n  - Create a single-module Maven project named portal aligned to Rivvy Portal Services (RS Service Tier) for the Rivvy Portal application.\n  - Establish standard directories: src/main/java, src/main/resources, src/test/java.\n  - Use main package com.rivvystudios.portal; add placeholder subpackages (empty package-info.java files or .gitkeep) for future layers: config, controller, service, domain, repository (no classes yet).\n  - Add a root-level .gitignore for Maven/Java/IDE artifacts (target/, .idea/, .project, .classpath, .settings/, *.iml, .DS_Store).\n\n- Maven configuration (pom.xml)\n  - groupId=com.rivvystudios, artifactId=portal, version=0.0.1, packaging=jar, name=Rivvy Portal Services.\n  - Parent: org.springframework.boot:spring-boot-starter-parent with a pinned 3.x version (use latest stable 3.3.x available in your environment).\n  - Properties: java.version=21; project.build.sourceEncoding=UTF-8; maven.compiler.release=21.\n  - Dependencies:\n    - org.springframework.boot:spring-boot-starter-web\n    - org.springframework.boot:spring-boot-starter-actuator\n    - org.springframework.boot:spring-boot-starter-validation\n    - test scope: org.springframework.boot:spring-boot-starter-test\n  - Build plugins:\n    - org.springframework.boot:spring-boot-maven-plugin (no special configuration required; optional mainClass=“com.rivvystudios.portal.PortalApplication”).\n  - Do not include persistence, security, OpenAPI, or messaging starters.\n\n- Application entrypoint\n  - Create com.rivvystudios.portal.PortalApplication with @SpringBootApplication and main(String[] args) that runs SpringApplication.\n\n- Configuration and profiles (YAML)\n  - src/main/resources/application.yml (common):\n    - spring.application.name: rivvy-portal-services\n    - server.port: 8080\n    - management.endpoints.web.exposure.include: health (explicit to ensure only health is exposed)\n    - management.endpoint.health.probes.enabled: true (enables liveness/readiness if needed later; still exposed under /actuator/health)\n  - src/main/resources/application-dev.yml: inherit defaults; optionally set logging.level.root: INFO.\n  - src/main/resources/application-test.yml: inherit defaults; optionally set logging.level.root: WARN to reduce noise during tests.\n  - src/main/resources/application-prod.yml: inherit defaults; optionally set logging.level.root: INFO.\n  - Do not set spring.profiles.active in files; allow activation via command line or environment.\n\n- Testing\n  - Create a context load test: com.rivvystudios.portal.PortalApplicationTests with @SpringBootTest to validate the application context starts.\n  - Add a health endpoint smoke test:\n    - @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\n    - Inject org.springframework.boot.test.web.client.TestRestTemplate and assert GET /actuator/health returns 200 and status=\"UP\".\n\n- Documentation\n  - Add README.md with:\n    - Project purpose and relation to Rivvy Portal Services (RS Service Tier).\n    - Prerequisites: Java 21, Maven 3.9+.\n    - Build: mvn clean verify\n    - Run: mvn spring-boot:run or java -jar target/portal-0.0.1.jar\n    - Profiles: --spring.profiles.active=dev|test|prod\n    - Health check: curl http://localhost:8080/actuator/health\n    - Notes: no business endpoints, future API to be added via Portal API.\n\n- Validation and sign-off\n  - Ensure mvn clean verify passes locally on Java 21.\n  - Start the app with each profile (dev/test/prod) to confirm successful boot and /actuator/health returns 200.\n  - Confirm no controllers exist and no non-Actuator endpoints respond.\n  - Tag initial commit/release as v0.0.1 if versioning workflow requires.",
+        "dependencies": []
+      }
+    ]
+  }
+}
