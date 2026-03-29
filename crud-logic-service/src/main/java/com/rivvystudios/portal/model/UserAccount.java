@@ -59,6 +59,18 @@ public class UserAccount {
     @Column(name = "updated_at", columnDefinition = "timestamptz")
     private Instant updatedAt;
 
+    @Column(name = "failed_attempts_count", nullable = false)
+    private Integer failedAttemptsCount = 0;
+
+    @Column(name = "first_failed_attempt_at", columnDefinition = "timestamptz")
+    private Instant firstFailedAttemptAt;
+
+    @Column(name = "last_failed_attempt_at", columnDefinition = "timestamptz")
+    private Instant lastFailedAttemptAt;
+
+    @Column(name = "locked_until", columnDefinition = "timestamptz")
+    private Instant lockedUntil;
+
     public UUID getId() {
         return id;
     }
@@ -153,5 +165,37 @@ public class UserAccount {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getFailedAttemptsCount() {
+        return failedAttemptsCount;
+    }
+
+    public void setFailedAttemptsCount(Integer failedAttemptsCount) {
+        this.failedAttemptsCount = failedAttemptsCount;
+    }
+
+    public Instant getFirstFailedAttemptAt() {
+        return firstFailedAttemptAt;
+    }
+
+    public void setFirstFailedAttemptAt(Instant firstFailedAttemptAt) {
+        this.firstFailedAttemptAt = firstFailedAttemptAt;
+    }
+
+    public Instant getLastFailedAttemptAt() {
+        return lastFailedAttemptAt;
+    }
+
+    public void setLastFailedAttemptAt(Instant lastFailedAttemptAt) {
+        this.lastFailedAttemptAt = lastFailedAttemptAt;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Instant lockedUntil) {
+        this.lockedUntil = lockedUntil;
     }
 }

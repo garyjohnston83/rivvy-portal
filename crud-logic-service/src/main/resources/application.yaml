@@ -27,3 +27,9 @@ spring:
     store-type: jdbc
     jdbc:
       initialize-schema: always
+
+auth:
+  lockout:
+    threshold: ${AUTH_LOCKOUT_THRESHOLD:5}
+    window-minutes: ${AUTH_LOCKOUT_WINDOW_MINUTES:15}
+    duration-minutes: ${AUTH_LOCKOUT_DURATION_MINUTES:30}
