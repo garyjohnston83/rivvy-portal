@@ -44,4 +44,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changesets/022-add-password-hash-to-user-account.sql
   - include:
+      file: db/changelog/changesets/023-add-lockout-fields-to-user-account.sql
+  - include:
       file: db/changelog/seed/R__seed_data.sql

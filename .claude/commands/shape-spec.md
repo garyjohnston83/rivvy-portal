@@ -221,7 +221,7 @@ After receiving user's answers from the orchestrator:
 
 ```bash
 # List all files in visuals folder - THIS IS MANDATORY
-ls -la [spec-path]/planning/visuals/ 2>/dev/null | grep -E '\.(png|jpg|jpeg|gif|svg|pdf)$' || echo "No visual files found"
+ls -la [spec-path]/planning/visuals/ | grep -E '\.(png|jpg|jpeg|gif|svg|pdf)$' || echo "No visual files found"
 ```
 
 3. IF visual files are found (bash command returns filenames):

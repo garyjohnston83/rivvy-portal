@@ -18,7 +18,7 @@ Read and understand all inputs and THINK HARD:
 cat agent-os/specs/[current-spec]/planning/requirements.md
 
 # Check for visual assets
-ls -la agent-os/specs/[current-spec]/planning/visuals/ 2>/dev/null | grep -v "^total" | grep -v "^d"
+ls -la agent-os/specs/[current-spec]/planning/visuals/ | grep -v "^total" | grep -v "^d"
 ```
 
 Parse and analyze:
