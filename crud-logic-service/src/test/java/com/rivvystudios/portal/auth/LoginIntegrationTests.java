@@ -56,7 +56,28 @@ class LoginIntegrationTests {
     }
 
     @Test
-    void loginWithDisabledAccountReturns401WithGenericError() throws Exception {
+    void inactiveAccountWithCorrectPasswordShowsDisabledMessage() throws Exception {
+        // Temporarily set admin to INACTIVE status
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        user.setStatus(UserAccountStatus.INACTIVE);
+        userAccountRepository.save(user);
+
+        try {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"admin@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
+        } finally {
+            // Restore original status
+            user.setStatus(originalStatus);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void suspendedAccountWithCorrectPasswordShowsDisabledMessage() throws Exception {
         // Temporarily set admin to SUSPENDED status
         UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
         UserAccountStatus originalStatus = user.getStatus();
@@ -68,12 +89,138 @@ class LoginIntegrationTests {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"email\":\"admin@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
                     .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
+        } finally {
+            // Restore original status
+            user.setStatus(originalStatus);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void disabledAccountWithIncorrectPasswordShowsGenericError() throws Exception {
+        // Temporarily set admin to SUSPENDED status
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        user.setStatus(UserAccountStatus.SUSPENDED);
+        userAccountRepository.save(user);
+
+        try {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"admin@rivvy.local\",\"password\":\"wrongpassword\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("Invalid email or password"));
         } finally {
             // Restore original status
             user.setStatus(originalStatus);
             userAccountRepository.save(user);
         }
+    }
+
+    @Test
+    void disabledAccountWithIncorrectPasswordIncrementsFailedAttempts() throws Exception {
+        // Temporarily set admin to INACTIVE status
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        Integer originalFailedCount = user.getFailedAttemptsCount();
+        user.setStatus(UserAccountStatus.INACTIVE);
+        user.setFailedAttemptsCount(0);
+        userAccountRepository.save(user);
+
+        try {
+            // Attempt login with wrong password
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"admin@rivvy.local\",\"password\":\"wrongpassword\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized());
+
+            // Verify failed attempts count incremented
+            UserAccount updatedUser = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+            assertThat(updatedUser.getFailedAttemptsCount()).isEqualTo(1);
+        } finally {
+            // Restore original status and failed count
+            user.setStatus(originalStatus);
+            user.setFailedAttemptsCount(originalFailedCount);
+            user.setFirstFailedAttemptAt(null);
+            user.setLastFailedAttemptAt(null);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void disabledAccountTriggersLockoutAfterThresholdAttempts() throws Exception {
+        // Temporarily set admin to INACTIVE status
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        Integer originalFailedCount = user.getFailedAttemptsCount();
+        user.setStatus(UserAccountStatus.INACTIVE);
+        user.setFailedAttemptsCount(0);
+        user.setLockedUntil(null);
+        userAccountRepository.save(user);
+
+        try {
+            // Attempt login 5 times with wrong password (default threshold)
+            for (int i = 0; i < 5; i++) {
+                mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin@rivvy.local\",\"password\":\"wrongpassword\",\"rememberMe\":false}"))
+                        .andExpect(status().isUnauthorized());
+            }
+
+            // Verify account is now locked
+            UserAccount lockedUser = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+            assertThat(lockedUser.getLockedUntil()).isNotNull();
+            assertThat(lockedUser.getFailedAttemptsCount()).isEqualTo(5);
+        } finally {
+            // Restore original status and clear lockout fields
+            user.setStatus(originalStatus);
+            user.setFailedAttemptsCount(originalFailedCount);
+            user.setFirstFailedAttemptAt(null);
+            user.setLastFailedAttemptAt(null);
+            user.setLockedUntil(null);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void disabledAccountWithCorrectPasswordDoesNotIncrementFailedAttempts() throws Exception {
+        // Temporarily set admin to INACTIVE status
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        Integer originalFailedCount = user.getFailedAttemptsCount();
+        user.setStatus(UserAccountStatus.INACTIVE);
+        user.setFailedAttemptsCount(0);
+        userAccountRepository.save(user);
+
+        try {
+            // Attempt login with correct password
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"admin@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
+
+            // Verify failed attempts count did NOT increment
+            UserAccount updatedUser = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+            assertThat(updatedUser.getFailedAttemptsCount()).isEqualTo(0);
+        } finally {
+            // Restore original status and failed count
+            user.setStatus(originalStatus);
+            user.setFailedAttemptsCount(originalFailedCount);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void activeAccountIsNotAffectedByDisabledAccountLogic() throws Exception {
+        // Verify normal login still works for ACTIVE accounts
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"admin@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.redirectUrl").value("/admin"))
+                .andExpect(jsonPath("$.roles[0]").value("RIVVY_ADMIN"));
     }
 
     @Test
@@ -129,5 +276,71 @@ class LoginIntegrationTests {
                     String allowOrigin = result.getResponse().getHeader("Access-Control-Allow-Origin");
                     assertThat(allowOrigin).isEqualTo("http://localhost:5200");
                 });
+    }
+
+    // Task Group 2: Gap-filling tests
+
+    @Test
+    void disabledProducerAccountShowsSameDisabledMessage() throws Exception {
+        // Test that RIVVY_PRODUCER user type gets same disabled message
+        UserAccount user = userAccountRepository.findByEmail("producer@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        user.setStatus(UserAccountStatus.INACTIVE);
+        userAccountRepository.save(user);
+
+        try {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"producer@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
+        } finally {
+            user.setStatus(originalStatus);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void disabledClientAccountShowsSameDisabledMessage() throws Exception {
+        // Test that CLIENT user type gets same disabled message
+        UserAccount user = userAccountRepository.findByEmail("client@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        user.setStatus(UserAccountStatus.SUSPENDED);
+        userAccountRepository.save(user);
+
+        try {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"client@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
+        } finally {
+            user.setStatus(originalStatus);
+            userAccountRepository.save(user);
+        }
+    }
+
+    @Test
+    void lockedAndDisabledAccountShowsGenericError() throws Exception {
+        // Test account that is both locked AND disabled shows lockout message (not disabled message)
+        UserAccount user = userAccountRepository.findByEmail("admin@rivvy.local").orElseThrow();
+        UserAccountStatus originalStatus = user.getStatus();
+        java.time.Instant originalLockedUntil = user.getLockedUntil();
+
+        user.setStatus(UserAccountStatus.INACTIVE);
+        user.setLockedUntil(java.time.Instant.now().plusSeconds(1800)); // Locked for 30 minutes
+        userAccountRepository.save(user);
+
+        try {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"email\":\"admin@rivvy.local\",\"password\":\"password123\",\"rememberMe\":false}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("Invalid email or password")); // Lockout message, not disabled message
+        } finally {
+            user.setStatus(originalStatus);
+            user.setLockedUntil(originalLockedUntil);
+            userAccountRepository.save(user);
+        }
     }
 }

@@ -112,9 +112,10 @@ public class AuthController {
                 // Correct password - reveal disabled message
                 logger.warn("Failed login attempt for user {} - reason: disabled_account (correct password)", userAccount.getId());
                 return ResponseEntity.status(401)
-                        .body(Map.of("error", "Your account has been disabled. Please contact support."));
+                        .body(Map.of("error", "Your account has been disabled. Please contact your administrator or support@rivvy.com for assistance."));
             } else {
-                // Incorrect password - generic error
+                // Incorrect password - track failed attempt and show generic error
+                handleFailedAttempt(userAccount, now);
                 logger.warn("Failed login attempt for user {} - reason: disabled_account (incorrect password)", userAccount.getId());
                 return ResponseEntity.status(401)
                         .body(Map.of("error", "Invalid email or password"));
